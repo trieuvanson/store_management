@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:store_management/utils/getx_utils.dart';
-import 'package:url_strategy/url_strategy.dart';
 import 'package:get/get.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'screens/check_sheet_products/bar_code_screen_check.dart';
+import 'package:url_strategy/url_strategy.dart';
+
 import 'constants/contains.dart';
-import 'screens/auth_screen/signin_screen.dart';
-import 'widgets/input_custom.dart';
 import 'widgets/custom_button.dart';
+import 'widgets/input_custom.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -140,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: CustomButton(
           onPressed: () =>
-              Get.to(() => const SignInScreen(), curve: Curves.easeIn),
+              Get.to(() => const BarCodeScreenCheck(), curve: Curves.easeIn),
           text: 'Increment',
           icon: const Icon(Icons.add)), // This trailing comma makes auto-formatting nicer for build methods.
     );

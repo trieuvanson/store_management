@@ -48,7 +48,10 @@ dependencies:
   shared_preferences: ^2.0.15
   google_fonts: ^3.0.1
   image_picker: ^0.8.6
-
+  flutter_barcode_scanner: ^2.0.0
+  permission_handler: ^10.2.0
+  flutter_ringtone_player: ^3.2.0
+  audioplayers: ^1.1.1
 
 
 
@@ -63,7 +66,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.1
-  permission_handler: ^10.2.0
   flutter_app_name: ^0.1.1
   rename: any
 
@@ -86,6 +88,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
+    - assets/sounds/
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

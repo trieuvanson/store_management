@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/check_sheet_products/bar_code_screen_check.dart';
+import 'package:store_management/screens/auth_screen/auth_screen.dart';
 import 'package:url_strategy/url_strategy.dart';
 
+import 'config/route_settings.dart';
 import 'constants/contains.dart';
+import 'screens/check_sheet_products/check_sheet_products.dart';
 import 'widgets/custom_button.dart';
 import 'widgets/input_custom.dart';
 
@@ -37,13 +39,14 @@ class StoreManagementApp extends StatelessWidget {
         primaryColor: kPrimaryColor,
         primarySwatch: MaterialColor(kPrimaryColor.value, kPrimaryColorMap),
         textTheme: Theme.of(context).textTheme.apply(
-              fontFamily: GoogleFonts.notoSans().fontFamily,
+              fontFamily: GoogleFonts.openSans().fontFamily,
               bodyColor: kTextColor,
             ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       darkTheme: ThemeData.dark(),
-      home: const MyHomePage(title: "Quản lý tồn kho"),
+      initialRoute: CheckSheetProductsScreen.routeName,
+      onGenerateRoute: RouteSettingsWithArguments.generateRoute,
       // routes: {
       //   '/': (context) => const MainScreen(),
       // },
@@ -139,9 +142,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: CustomButton(
           onPressed: () =>
-              Get.to(() => const BarCodeScreenCheck(), curve: Curves.easeIn),
+              Get.to(() => const CheckSheetProductsScreen(), curve: Curves.easeIn),
           text: 'Increment',
-          icon: const Icon(Icons.add)), // This trailing comma makes auto-formatting nicer for build methods.
+          icon: const Icon(Icons
+              .add)), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

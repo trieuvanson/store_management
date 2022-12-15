@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:store_management/screens/home_screen/choose_store_screen/choose_store_screen.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../constants/contains.dart';
 import '../../widgets/widgets.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+class AuthScreen extends StatefulWidget {
+
+  static const String routeName = '/auth';
+
+  const AuthScreen({Key? key}) : super(key: key);
+
+
+
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _AuthScreenState extends State<AuthScreen> {
   bool isSignIn = false;
 
   changeLayout() {
@@ -24,6 +33,18 @@ class _SignInScreenState extends State<SignInScreen> {
     return Scaffold(
       body: SafeArea(
         child: Container(
+          decoration: const BoxDecoration(
+            //shadow light
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFFFFF),
+                Color(0xFFFFFFFF),
+                Color(0xFF8CB68D),
+              ],
+            ),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
@@ -36,7 +57,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     style: TextStyle(
                       fontSize: isSignIn ? 20 : 30,
                       fontWeight: FontWeight.bold,
-                      color: isSignIn ? Colors.grey : Colors.blue,
+                      color: isSignIn ? Colors.grey : kPrimaryColor,
                     ),
                   ),
                 ),
@@ -47,7 +68,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     style: TextStyle(
                       fontSize: isSignIn ? 30 : 20,
                       fontWeight: FontWeight.bold,
-                      color: isSignIn ? Colors.blue : Colors.grey,
+                      color: isSignIn ? kPrimaryColor : Colors.grey,
                     ),
                   ),
                 ),
@@ -68,7 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return Column(
       children: [
         const Text(
-          'Xin chào! Bạn đã đăng xuất. Hãy đăng nhập để tiếp tục.',
+          'Xin chào! Bạn đã đăng xuất. \nHãy đăng nhập để tiếp tục.',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -96,8 +117,8 @@ class _SignInScreenState extends State<SignInScreen> {
         20.heightBox,
         CustomButton(
           text: 'Đăng nhập',
-          onPressed: () {},
-          color: Colors.blue,
+          onPressed: () => Get.toNamed(ChooseStoreScreen.routeName),
+          color: kPrimaryColor,
           textColor: Colors.white,
           width: double.infinity,
           height: 50,
@@ -111,13 +132,14 @@ class _SignInScreenState extends State<SignInScreen> {
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children:  [
             Text(
               'Quên mật khẩu?',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.normal,
-                color: Colors.grey,
+                color: kPrimaryColor.withOpacity(0.8),
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -140,7 +162,7 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
         const SizedBox(height: 20),
         const Text(
-          'Đăng ký ngay',
+          'Đăng ký tại đây',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -193,7 +215,7 @@ class _SignInScreenState extends State<SignInScreen> {
         CustomButton(
           text: 'Đăng ký',
           onPressed: () {},
-          color: Colors.blue,
+          color: kPrimaryColor,
           textColor: Colors.white,
           width: double.infinity,
           height: 50,

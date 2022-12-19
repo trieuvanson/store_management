@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:store_management/utils/utils.dart';
 
 import '../../../constants/contains.dart';
+import '../../screens.dart';
 
 class ChooseStoreScreen extends StatefulWidget {
   static const String routeName = '/choose-store-screen';
@@ -14,6 +17,9 @@ class ChooseStoreScreen extends StatefulWidget {
 }
 
 class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
+
+  DateTime? currentBackPressTime;
+
   var data = {
     "total": 4,
     "pageSize": 20,
@@ -90,72 +96,84 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () {
-              decodeData();
-            },
+            onPressed: () => {},
             icon: const Icon(Icons.refresh),
             tooltip: 'Làm mới',
           ),
+          //Quay lại đăng nhập
+          IconButton(
+            onPressed: () => Get.offAllNamed(AuthScreen.routeName),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Đăng xuất',
+          ),
         ],
+        //No back icon
+        automaticallyImplyLeading: false,
+
       ),
       //ListView
-      body: ListView.builder(
-        itemCount: _dataDecode.length,
-        itemBuilder: (context, index) {
-          var item = _dataDecode[index];
-          return Container(
-            margin: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Colors.grey.withOpacity(0.5),
-                width: 1,
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(kDefaultPadding / 2.5),
-              child: ListTile(
-                onTap: () {},
-                key: ValueKey(item['id']),
-                style: ListTileStyle.list,
-                shape: RoundedRectangleBorder(
+      body: WillPopScope(
+        onWillPop: () => handleWillPop(currentBackPressTime, context),
+        child: SafeArea(
+          child: ListView.builder(
+            itemCount: _dataDecode.length,
+            itemBuilder: (context, index) {
+              var item = _dataDecode[index];
+              return Container(
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                ),
-                title: RichText(
-                  text: TextSpan(
-                    text: item['branchName'],
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: ' - ${item['contactNumber']}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.5),
+                    width: 1,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${item['address']}${item['wardName'] != '' ? ", " + item['wardName'] : ""}, ${item['locationName']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: kPrimaryColor.withOpacity(0.8),
+                child: Container(
+                  padding: const EdgeInsets.all(kDefaultPadding / 2.5),
+                  child: ListTile(
+                    onTap: () => Get.toNamed(CheckSheetProductsScreen.routeName),
+                    key: ValueKey(item['id']),
+                    style: ListTileStyle.list,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    title: RichText(
+                      text: TextSpan(
+                        text: item['branchName'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' - ${item['contactNumber']}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${item['address']}${item['wardName'] != '' ? ", " + item['wardName'] : ""}, ${item['locationName']}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: kPrimaryColor.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

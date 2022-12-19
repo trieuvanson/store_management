@@ -14,7 +14,7 @@ class CheckSheetProductsScreen extends StatefulWidget {
 }
 
 class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
-  bool _isShowCam = true;
+  bool _isShowCam = false;
 
   var map = {};
 
@@ -31,13 +31,13 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   }
 
   addBarCode(String barcode) {
-    soundWhenScan();
+    soundWhenScanned();
     setState(() {
       map[barcode] = map[barcode] == null ? 1 : map[barcode]! + 1;
     });
   }
 
-  soundWhenScan() async {
+  soundWhenScanned() async {
     final player = AudioPlayer();
     player.play(AssetSource('sounds/Scanner-Beep-Sound.wav'));
   }
@@ -51,9 +51,10 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const SCREEN_NAME = 'Kiểm tra tồn kho';
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kiểm tra mã vạch"),
+        title: const Text(SCREEN_NAME),
         actions: [
           IconButton(
             onPressed: hideShowCamera,

@@ -52,7 +52,8 @@ dependencies:
   flutter_ringtone_player: ^3.2.0
   audioplayers: ^1.1.1
   ai_barcode: ^3.2.4
-
+  fluttertoast: 8.1.2
+  double_back_to_close_app: ^2.1.0
 
 
 dev_dependencies:

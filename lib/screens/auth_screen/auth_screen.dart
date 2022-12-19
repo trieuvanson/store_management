@@ -21,64 +21,108 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool isSignIn = false;
+  DateTime? currentBackPressTime;
 
   changeLayout() {
     setState(() {
       isSignIn = !isSignIn;
     });
   }
+  Future<bool> handleWillPop(BuildContext context) async {
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedOrSnackBarHasBeenClosed =
+        currentBackPressTime == null ||
+            now.difference(currentBackPressTime!) > const Duration(seconds: 2);
+
+    if (backButtonHasNotBeenPressedOrSnackBarHasBeenClosed) {
+      currentBackPressTime = now;
+      Get.snackbar(
+        'Thông báo',
+        'Nhấn lần nữa để thoát',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(10),
+        borderRadius: 10,
+        snackStyle: SnackStyle.FLOATING,
+        animationDuration: const Duration(milliseconds: 300),
+        duration: const Duration(seconds: 2),
+        icon: const Icon(
+          Icons.info,
+          color: Colors.white,
+        ),
+        mainButton: TextButton(
+          onPressed: () {
+            Get.back();
+          },
+          child: const Icon(
+            Icons.close,
+            color: Colors.white,
+          ),
+        ),
+      );
+      return false;
+    }
+    //close app
+    Get.close(1);
+    return true;
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            //shadow light
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFFFFFFF),
-                Color(0xFFFFFFFF),
-                Color(0xFF8CB68D),
+      body: WillPopScope(
+        onWillPop:() => handleWillPop(context),
+        child: SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              //shadow light
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFFFFF),
+                  Color(0xFFFFFFFF),
+                  Color(0xFF8CB68D),
+                ],
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  GestureDetector(
+                    onTap: () => isSignIn? changeLayout() : null,
+                    child: Text(
+                      'Đăng nhập',
+                      style: TextStyle(
+                        fontSize: isSignIn ? 20 : 30,
+                        fontWeight: FontWeight.bold,
+                        color: isSignIn ? Colors.grey : kPrimaryColor,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => isSignIn? null : changeLayout(),
+                    child: Text(
+                      'Đăng ký',
+                      style: TextStyle(
+                        fontSize: isSignIn ? 30 : 20,
+                        fontWeight: FontWeight.bold,
+                        color: isSignIn ? kPrimaryColor : Colors.grey,
+                      ),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 20),
+                IndexedStack(
+                  index: isSignIn ? 1 : 0,
+                  children: [_signInView(context), _signUpView(context)],
+                ),
               ],
             ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                GestureDetector(
-                  onTap: () => isSignIn? changeLayout() : null,
-                  child: Text(
-                    'Đăng nhập',
-                    style: TextStyle(
-                      fontSize: isSignIn ? 20 : 30,
-                      fontWeight: FontWeight.bold,
-                      color: isSignIn ? Colors.grey : kPrimaryColor,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => isSignIn? null : changeLayout(),
-                  child: Text(
-                    'Đăng ký',
-                    style: TextStyle(
-                      fontSize: isSignIn ? 30 : 20,
-                      fontWeight: FontWeight.bold,
-                      color: isSignIn ? kPrimaryColor : Colors.grey,
-                    ),
-                  ),
-                ),
-              ]),
-              const SizedBox(height: 20),
-              IndexedStack(
-                index: isSignIn ? 1 : 0,
-                children: [_signInView(context), _signUpView(context)],
-              ),
-            ],
           ),
         ),
       ),
@@ -117,7 +161,20 @@ class _AuthScreenState extends State<AuthScreen> {
         20.heightBox,
         CustomButton(
           text: 'Đăng nhập',
-          onPressed: () => Get.toNamed(ChooseStoreScreen.routeName),
+          onPressed: () => {
+            // Fluttertoast.showToast(
+            //   msg: 'Đăng nhập thành công',
+            //   toastLength: Toast.LENGTH_SHORT,
+            //   gravity: ToastGravity.BOTTOM,
+            //   timeInSecForIosWeb: 1,
+            //   backgroundColor: Colors.green,
+            //   textColor: Colors.white,
+            //   fontSize: 16.0,
+            // ),
+            Future.delayed(const Duration(seconds: 2), () {
+              Get.offAllNamed(ChooseStoreScreen.routeName);
+            }),
+          },
           color: kPrimaryColor,
           textColor: Colors.white,
           width: double.infinity,

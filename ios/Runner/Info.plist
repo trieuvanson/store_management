@@ -13,6 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
+
 	<string>Quản lý tồn kho</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>

@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -30,10 +31,17 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   }
 
   addBarCode(String barcode) {
+    soundWhenScan();
     setState(() {
       map[barcode] = map[barcode] == null ? 1 : map[barcode]! + 1;
     });
   }
+
+  soundWhenScan() async {
+    final player = AudioPlayer();
+    player.play(AssetSource('sounds/Scanner-Beep-Sound.wav'));
+  }
+
 
   hideShowCamera() {
     setState(() {

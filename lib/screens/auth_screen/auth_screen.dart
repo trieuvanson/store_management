@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:store_management/screens/home_screen/choose_store_screen/choose_store_screen.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -63,8 +64,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
       return false;
     }
-    //close app
-    Get.close(1);
+    SystemNavigator.pop();
     return true;
   }
 

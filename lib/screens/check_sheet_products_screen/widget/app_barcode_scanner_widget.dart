@@ -15,11 +15,11 @@ class AppBarcodeScannerWidget extends StatefulWidget {
   ///
   AppBarcodeScannerWidget.defaultStyle({
     Key? key,
-    Function(String result)? resultCallback,
+   required Function(String result) resultCallback,
     this.openManual = false,
     String label = '',
   }) : super(key: key) {
-    _resultCallback = resultCallback ?? (String result) {};
+    _resultCallback = resultCallback;
     _label = label;
   }
 
@@ -81,13 +81,14 @@ class _AppBarcodeState extends State<AppBarcodeScannerWidget> {
       children: <Widget>[
         Expanded(
           child: _isGranted
-              ? _useCameraScan
-                  ? _BarcodeScannerWidget()
-                  : _BarcodeInputWidget.defaultStyle(
-                      changed: (String value) {
-                        _inputValue = value;
-                      },
-                    )
+              ? _BarcodeScannerWidget()
+              // ? _useCameraScan
+              //     ? _BarcodeScannerWidget()
+              //     : _BarcodeInputWidget.defaultStyle(
+              //         changed: (String value) {
+              //           _inputValue = value;
+              //         },
+              //       )
               : Container(),
           // : Center(
           //     child: OutlinedButton(
@@ -154,7 +155,7 @@ class _BarcodeInputState extends State<_BarcodeInputWidget> {
   void initState() {
     super.initState();
     _controller.addListener(() {
-      final text = _controller.text.toLowerCase();
+      var text = _controller.text.toLowerCase();
       _controller.value = _controller.value.copyWith(
         text: text,
         selection:
@@ -168,10 +169,10 @@ class _BarcodeInputState extends State<_BarcodeInputWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Padding(padding: EdgeInsets.all(8)),
+        const Padding(padding: EdgeInsets.all(8)),
         Row(
           children: <Widget>[
-            Padding(padding: EdgeInsets.all(8)),
+            const Padding(padding: EdgeInsets.all(8)),
             Text(
               "$_label：",
             ),
@@ -179,13 +180,13 @@ class _BarcodeInputState extends State<_BarcodeInputWidget> {
               child: TextFormField(
                 controller: _controller,
                 onChanged: widget._changed,
-                decoration: InputDecoration(border: OutlineInputBorder()),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
             ),
-            Padding(padding: EdgeInsets.all(8)),
+            const Padding(padding: EdgeInsets.all(8)),
           ],
         ),
-        Padding(padding: EdgeInsets.all(8)),
+        const Padding(padding: EdgeInsets.all(8)),
       ],
     );
   }
@@ -208,10 +209,11 @@ class _AppBarcodeScannerWidgetState extends State<_BarcodeScannerWidget> {
 
     _scannerController = ScannerController(scannerResult: (result) {
       _resultCallback(result);
+      result = "";
     }, scannerViewCreated: () {
       TargetPlatform platform = Theme.of(context).platform;
       if (TargetPlatform.iOS == platform) {
-        Future.delayed(Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 2), () {
           _scannerController.startCamera();
           _scannerController.startCameraPreview();
         });
@@ -225,7 +227,6 @@ class _AppBarcodeScannerWidgetState extends State<_BarcodeScannerWidget> {
   @override
   void dispose() {
     super.dispose();
-
     _scannerController.stopCameraPreview();
     _scannerController.stopCamera();
   }

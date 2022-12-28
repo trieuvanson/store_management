@@ -25,7 +25,11 @@ class RouteSettingsWithArguments extends RouteSettings {
         return MaterialPageRoute(builder: (_) => const ChooseStoreScreen());
       case CheckSheetProductsScreen.routeName:
         return MaterialPageRoute(
-            builder: (_) => const CheckSheetProductsScreen());
+            builder: (_) => CheckSheetProductsScreen(
+                  branchId: settings.arguments as int,
+                ));
+      case CheckingLoginPage.routeName:
+        return MaterialPageRoute(builder: (_) => const CheckingLoginPage());
       default:
         return MaterialPageRoute(
             builder: (_) => const NotFound(
@@ -44,7 +48,34 @@ class NotFound extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text(message!)),
+      //beautiful 404 page
+      body: Container(
+        padding:
+            EdgeInsets.symmetric(vertical: MediaQuery.of(context).padding.top),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: const [0.4, 0.6],
+            colors: [
+              Colors.green,
+              Colors.green.shade200,
+            ],
+          ),
+        ),
+        child: Center(
+          child: Text(
+            message ??
+                '404 NOT FOUND\n'
+                    'Không tìm thấy trang này.\n',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

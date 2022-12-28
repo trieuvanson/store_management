@@ -37,13 +37,15 @@ dependencies:
   flutter_dotenv: ^5.0.2
   flutter_secure_storage: ^7.0.1
   dio: ^4.0.6
-  flutter_bloc: ^8.1.1
+  flutter_bloc: ^8.0.1
+  bloc_concurrency: ^0.2.0
+  stream_transform: ^2.1.0
   equatable: ^2.0.5
   get: ^4.6.5
   path_provider: ^2.0.11
-  device_preview: ^1.1.0
+  device_preview:
   url_strategy: ^0.2.0
-  velocity_x: ^3.6.0
+  velocity_x: ^3.2.0
   hexcolor:
   shared_preferences: ^2.0.15
   google_fonts: ^3.0.1
@@ -54,7 +56,13 @@ dependencies:
   ai_barcode: ^3.2.4
   fluttertoast: 8.1.2
   double_back_to_close_app: ^2.1.0
-
+  overlay_support: ^2.1.0
+  connectivity: ^3.0.6
+  flutter_signature_pad: ^3.0.1
+  gallery_saver: ^2.3.2
+  image_gallery_saver: ^1.7.1
+  intl: ^0.17.0
+  scan: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -68,7 +76,6 @@ dev_dependencies:
   flutter_lints: ^2.0.1
   flutter_app_name: ^0.1.1
   rename: any
-
 
 
 flutter_app_name:

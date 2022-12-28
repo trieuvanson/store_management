@@ -1,0 +1,1 @@
+export 'widget/app_barcode_scanner_widget.dart';

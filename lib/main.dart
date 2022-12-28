@@ -1,12 +1,21 @@
+import 'dart:async';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:store_management/screens/auth_screen/repository/auth_repostory.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/product_bloc.dart';
+import 'package:store_management/screens/check_sheet_products_screen/repository/product_repository.dart';
 import 'package:url_strategy/url_strategy.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'config/route_settings.dart';
 import 'constants/contains.dart';
+import 'screens/auth_screen/core/auth_bloc.dart';
 import 'screens/screens.dart';
 
 Future<void> main() async {
@@ -16,7 +25,7 @@ Future<void> main() async {
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    print(e);
+    debugPrint(e.toString());
   }
   setPathUrlStrategy();
   runApp(const StoreManagementApp());
@@ -30,28 +39,77 @@ class StoreManagementApp extends StatefulWidget {
 }
 
 class _StoreManagementAppState extends State<StoreManagementApp> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      void _showToast(String message) {
+        Fluttertoast.showToast(
+          msg: message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+
+      if (result == ConnectivityResult.none) {
+        _showToast('Không có kết nối mạng');
+        _timer = Timer.periodic(const Duration(seconds: 5),
+            (Timer t) => _showToast('Không có kết nối mạng'));
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Kết nối thành công',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        _timer?.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Lix Shop',
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light,
-      theme: ThemeData(
-        primaryColor: kPrimaryColor,
-        primarySwatch: MaterialColor(kPrimaryColor.value, kPrimaryColorMap),
-        textTheme: Theme.of(context).textTheme.apply(
-              fontFamily: GoogleFonts.openSans().fontFamily,
-              bodyColor: kTextColor,
-            ),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              AuthBloc(AuthRepository())..add(CheckLoginEvent()),
+        ),
+        BlocProvider(
+          create: (context) => ProductBloc(ProductRepository()),
+        ),
+      ],
+      child: GetMaterialApp(
+        title: 'Quản lý tồn kho',
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.light,
+        theme: ThemeData(
+          primaryColor: kPrimaryColor,
+          primarySwatch: MaterialColor(kPrimaryColor.value, kPrimaryColorMap),
+          textTheme: Theme.of(context).textTheme.apply(
+                fontFamily: GoogleFonts.openSans().fontFamily,
+                bodyColor: kTextColor,
+              ),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        darkTheme: ThemeData.dark(),
+        initialRoute: CheckingLoginPage.routeName,
+        onGenerateRoute: RouteSettingsWithArguments.generateRoute,
       ),
-      darkTheme: ThemeData.dark(),
-      initialRoute: AuthScreen.routeName,
-      onGenerateRoute: RouteSettingsWithArguments.generateRoute,
-      // routes: {
-      //   '/': (context) => const MainScreen(),
-      // },
-      // onGenerateRoute: RouteSettingsWithArguments.generateRoute,
     );
   }
 }

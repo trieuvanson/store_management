@@ -25,3 +25,60 @@ String convertCurrencyToVND(int amount) {
   return amount.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},');
 }
+const kTextAveRom10 = TextStyle(
+  fontFamily: 'avenir-roman',
+  fontWeight: FontWeight.w400,
+  fontSize: 10.0,
+);
+
+const kTextAveRom12 = TextStyle(
+  fontFamily: 'avenir-roman',
+  fontWeight: FontWeight.w400,
+  fontSize: 12.0,
+);
+
+const kTextAveRom14 = TextStyle(
+  fontFamily: 'avenir-roman',
+  fontWeight: FontWeight.w400,
+  fontSize: 14.0,
+);
+
+const kTextAveRom16 = TextStyle(
+  fontFamily: 'avenir-roman',
+  fontWeight: FontWeight.w400,
+  fontSize: 16.0,
+);
+
+const kTextAveRom18 = TextStyle(
+  fontFamily: 'avenir-roman',
+  fontWeight: FontWeight.w400,
+  fontSize: 18.0,
+);
+
+//AVENIR-HEAVY
+const kTextAveHev14 = TextStyle(
+  fontFamily: 'avenir-heavy',
+  fontWeight: FontWeight.w700,
+  fontSize: 14.0,
+);
+
+const kTextAveHev16 = TextStyle(
+  fontFamily: 'avenir-heavy',
+  fontWeight: FontWeight.w700,
+  fontSize: 16.0,
+);
+
+const kTextAveHev18 = TextStyle(
+  fontFamily: 'avenir-heavy',
+  fontWeight: FontWeight.w700,
+  fontSize: 18.0,
+);
+
+const kColorDark = Color(0xFF3d3e51);
+const kColorMuted = Color(0xFF969393);
+const kColorBlack = Color(0xff000000);
+const kColorWhite = Color(0xffffffff);
+const kColorGreen= Color(0xff008000);
+const kColorRed=Color(0xffFF0000);
+const kColorWhiteSmoke = Color(0xFFF4F4F4);
+

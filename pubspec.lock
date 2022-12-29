@@ -646,6 +646,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  qr_code_scanner:
+    dependency: "direct main"
+    description:
+      name: qr_code_scanner
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   qr_flutter:
     dependency: transitive
     description:
@@ -660,13 +667,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
-  scan:
-    dependency: "direct main"
-    description:
-      name: scan
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.6.0"
   shared_preferences:
     dependency: "direct main"
     description:

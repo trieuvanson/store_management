@@ -8,7 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:store_management/screens/auth_screen/repository/auth_repostory.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/product_bloc.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
 import 'package:store_management/screens/check_sheet_products_screen/repository/product_repository.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

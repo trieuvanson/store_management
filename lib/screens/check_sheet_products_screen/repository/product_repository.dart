@@ -53,7 +53,7 @@ class ProductRepository extends AbstractRepository
       return ProductDTO.fromJson(response.data['data']);
     } catch (e) {
       print(e);
-      rethrow;
+      throw e;
     }
   }
 

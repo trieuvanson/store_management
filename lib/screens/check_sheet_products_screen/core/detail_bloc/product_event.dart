@@ -40,6 +40,12 @@ class UpdateProduct extends ProductEvent {
   UpdateProduct(this.product);
 }
 
+class SaveToFileEvent extends ProductEvent {
+  final int branchId;
+  SaveToFileEvent({required this.branchId});
+}
+
+
 class DeleteProduct extends ProductEvent {
   final ProductDTO product;
 

@@ -202,14 +202,15 @@ class _BarcodeScannerWidget extends StatefulWidget {
 
 class _AppBarcodeScannerWidgetState extends State<_BarcodeScannerWidget> {
   late ScannerController _scannerController;
+  bool isScanned = false;
 
   @override
   void initState() {
     super.initState();
 
     _scannerController = ScannerController(scannerResult: (result) {
+      isScanned = true;
       _resultCallback(result);
-      result = "";
     }, scannerViewCreated: () {
       TargetPlatform platform = Theme.of(context).platform;
       if (TargetPlatform.iOS == platform) {
@@ -218,6 +219,15 @@ class _AppBarcodeScannerWidgetState extends State<_BarcodeScannerWidget> {
           _scannerController.startCameraPreview();
         });
       } else {
+        _scannerController.startCamera();
+        _scannerController.startCameraPreview();
+      }
+    });
+    _scannerController.addListener(() {
+      if (isScanned) {
+        isScanned = false;
+        _scannerController.stopCameraPreview();
+        _scannerController.stopCamera();
         _scannerController.startCamera();
         _scannerController.startCameraPreview();
       }

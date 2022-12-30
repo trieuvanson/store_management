@@ -14,6 +14,27 @@ class ProductRepository extends AbstractRepository
     throw UnimplementedError();
   }
 
+  Future<List<ProductDTO>> search(query,
+      {required branchId, pageSize = 50, pageIndex = 1}) async {
+    try {
+      var url =
+          "$_finalUrl/search/$query?branchId=$branchId&pageSize=$pageSize&pageIndex=$pageIndex";
+      print('url: $url');
+      final auth = await secureStorage.readAuth();
+      var response = await get(url: url, token: auth!.accessToken);
+      if (response.statusCode == 200) {
+        var data = response.data;
+        var res = ProductResponse.fromJson(data);
+        return res.data!;
+      } else {
+        return Future.error(response.data['message']);
+      }
+    } catch (e) {
+      print(e);
+      throw e;
+    }
+  }
+
   @override
   Future<void> delete(ProductDTO storeDto) {
     // TODO: implement delete

@@ -8,7 +8,8 @@ class LoadProducts extends ProductEvent {
   int? pageIndex;
   int? pageSize;
 
-  LoadProducts({required this.branchId, this.pageIndex = 1, this.pageSize = 50});
+  LoadProducts(
+      {required this.branchId, this.pageIndex = 1, this.pageSize = 50});
 }
 
 class LoadMoreProducts extends ProductEvent {
@@ -18,6 +19,34 @@ class LoadMoreProducts extends ProductEvent {
 
   LoadMoreProducts(
       {required this.branchId, this.pageIndex = 1, this.pageSize = 50});
+}
+
+class SearchProducts extends ProductEvent {
+  String? query;
+  int? branchId;
+  int? pageIndex;
+  int? pageSize;
+
+  SearchProducts({
+    required this.query,
+    required this.branchId,
+    this.pageIndex = 1,
+    this.pageSize = 50,
+  });
+}
+
+class LoadMoreSearchProducts extends ProductEvent {
+  String? query;
+  int? branchId;
+  int? pageIndex;
+  int? pageSize;
+
+  LoadMoreSearchProducts({
+    required this.query,
+    required this.branchId,
+    this.pageIndex = 1,
+    this.pageSize = 50,
+  });
 }
 
 class AddProduct extends ProductEvent {
@@ -30,8 +59,9 @@ class AddProduct extends ProductEvent {
 class EditProduct extends ProductEvent {
   final ProductDTO product;
   final int index;
+  String? action;
 
-  EditProduct({required this.product, required this.index});
+  EditProduct({required this.product, required this.index, this.action});
 }
 
 class UpdateProduct extends ProductEvent {
@@ -42,9 +72,9 @@ class UpdateProduct extends ProductEvent {
 
 class SaveToFileEvent extends ProductEvent {
   final int branchId;
+
   SaveToFileEvent({required this.branchId});
 }
-
 
 class DeleteProduct extends ProductEvent {
   final ProductDTO product;
@@ -52,20 +82,9 @@ class DeleteProduct extends ProductEvent {
   DeleteProduct(this.product);
 }
 
-class ProductEventNotValidated extends ProductEvent {
-  final String error;
+class DeleteAllProducts extends ProductEvent {
+  final int branchId;
+  final String? date;
 
-  ProductEventNotValidated(this.error);
-}
-
-class ProductEventNotValidatedName extends ProductEvent {
-  final String error;
-
-  ProductEventNotValidatedName(this.error);
-}
-
-class ProductEventNotValidatedDescription extends ProductEvent {
-  final String error;
-
-  ProductEventNotValidatedDescription(this.error);
+  DeleteAllProducts({required this.branchId, this.date});
 }

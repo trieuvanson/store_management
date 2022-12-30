@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../screens/check_sheet_products_screen/model/product_dto.dart';
 import '../screens/screens.dart';
 
 class RouteSettingsWithArguments extends RouteSettings {
@@ -30,6 +31,14 @@ class RouteSettingsWithArguments extends RouteSettings {
                 ));
       case CheckingLoginPage.routeName:
         return MaterialPageRoute(builder: (_) => const CheckingLoginPage());
+      case CheckSheetDetailScreen.routeName:
+        return MaterialPageRoute(
+            builder: (_) => CheckSheetDetailScreen(
+                  product: (settings.arguments as Map<String, dynamic>)['product']
+                      as ProductDTO,
+                  index: (settings.arguments as Map<String, dynamic>)['index'],
+                ));
+
       default:
         return MaterialPageRoute(
             builder: (_) => const NotFound(

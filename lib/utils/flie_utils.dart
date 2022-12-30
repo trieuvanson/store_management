@@ -31,7 +31,8 @@ class FileUtils {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/$fileName.json');
       print('Save to file: ${file.path}');
-      final contents = jsonEncode(data.map((e) => e.toJson()).toList());
+      var saveData = data.map((e) => e.toJson()).toList();
+      final contents = jsonEncode(saveData);
       await file.writeAsString(contents.toString());
       return true;
     } catch (e) {

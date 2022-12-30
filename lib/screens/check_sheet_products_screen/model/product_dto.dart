@@ -3,14 +3,24 @@ import 'dart:convert';
 class Expiry {
   int? id;
   String? date;
+  int? quantity;
 
-  Expiry({this.id, this.date});
+  Expiry({this.id, this.date, this.quantity});
 
   factory Expiry.fromJson(Map<String, dynamic> json) {
     return Expiry(
       id: json['id'],
       date: json['date'],
+      quantity: json['quantity']??0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'date': date,
+      'quantity': quantity,
+    };
   }
 }
 
@@ -97,7 +107,9 @@ class ProductDTO {
       'inventory': inventory,
       'inventoryCurrent': inventoryCurrent,
       'image': image,
-      'expires': expires,
+      'hanSuDungAPIs': expires == null
+          ? null
+          : List<dynamic>.from(expires!.map((x) => x.toJson())),
     };
   }
 

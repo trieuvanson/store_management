@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:store_management/repositories/abstract_interface.dart';
 import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
 
@@ -30,7 +33,6 @@ class ProductRepository extends AbstractRepository
         return Future.error(response.data['message']);
       }
     } catch (e) {
-      print(e);
       throw e;
     }
   }
@@ -54,10 +56,13 @@ class ProductRepository extends AbstractRepository
           'pageSize': pageSize,
         },
       );
-      var res = ProductResponse.fromJson(response.data);
-      return res.data!;
+      if (response.statusCode == 200) {
+        var res = ProductResponse.fromJson(response.data);
+        return res.data!;
+      } else {
+        return Future.error("Có lỗi xảy ra vui lòng thử lại");
+      }
     } catch (e) {
-      print(e);
       rethrow;
     }
   }
@@ -71,11 +76,19 @@ class ProductRepository extends AbstractRepository
         token: auth!.accessToken,
         branchId: branchId,
       );
-      return ProductDTO.fromJson(response.data['data']);
+      if (response.statusCode == 200) {
+        return ProductDTO.fromJson(response.data['data']);
+      } else {
+        return Future.error(response.data['message']);
+      }
+    } on DioError catch (e) {
+      if (e.response!.statusCode == 400) {
+        rethrow;
+      }
     } catch (e) {
-      print(e);
-      throw e;
+      rethrow;
     }
+    return Future.error('Không tìm thấy sản phẩm');
   }
 
   @override
@@ -87,6 +100,35 @@ class ProductRepository extends AbstractRepository
   @override
   Future<ProductDTO> update(ProductDTO storeDto) {
     throw UnimplementedError();
+  }
+
+
+
+
+
+  Future<ProductDTO> updateWithParams(
+      {required ProductDTO storeDto, required int branchId}) async {
+    try {
+      final auth = await secureStorage.readAuth();
+      final response = await put(
+        url: "$_finalUrl/id/${storeDto.id}",
+        token: auth!.accessToken,
+        branchId: branchId,
+        data: jsonEncode((storeDto.toJson()))
+      );
+      if (response.statusCode == 200) {
+        return ProductDTO.fromJson(response.data['data']);
+      } else {
+        return Future.error(response.data['message']);
+      }
+    } on DioError catch (e) {
+      if (e.response!.statusCode == 400) {
+        rethrow;
+      }
+    } catch (e) {
+      rethrow;
+    }
+    return Future.error('Không tìm thấy sản phẩm');
   }
 
   @override

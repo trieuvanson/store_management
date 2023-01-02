@@ -34,9 +34,9 @@ class RouteSettingsWithArguments extends RouteSettings {
       case CheckSheetDetailScreen.routeName:
         return MaterialPageRoute(
             builder: (_) => CheckSheetDetailScreen(
-                  product: (settings.arguments as Map<String, dynamic>)['product']
-                      as ProductDTO,
-                  index: (settings.arguments as Map<String, dynamic>)['index'],
+                  product: (settings.arguments
+                      as Map<String, dynamic>)['product'] as ProductDTO,
+                  index: (settings.arguments as Map<String, dynamic>)['index'] as int,
                 ));
 
       default:

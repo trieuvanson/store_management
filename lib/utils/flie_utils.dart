@@ -20,7 +20,6 @@ class FileUtils {
       }
       return [];
     } catch (e) {
-      print('Error: $e');
     }
     return [];
   }
@@ -36,7 +35,6 @@ class FileUtils {
       await file.writeAsString(contents.toString());
       return true;
     } catch (e) {
-      print('Error: $e');
     }
     return false;
   }
@@ -47,12 +45,11 @@ class FileUtils {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/$fileName.json');
       print('Remove all cart: ${file.path}');
-      await file.delete();
+     var delete = await file.delete();
       return true;
     } catch (e) {
-      print('Error: $e');
+      return false;
     }
-    return false;
   }
 }
 

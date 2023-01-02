@@ -6,11 +6,15 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
 import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
 import 'package:store_management/utils/date_utils.dart';
 import 'package:stream_transform/stream_transform.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 import '../../../constants/contains.dart';
 import '../../../utils/utils.dart';
@@ -37,6 +41,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   late ScrollController _scrollController;
   late ProductBloc _productBloc;
+  late CheckSheetCubit _checkSheetCubit;
   int _pageIndex = 1;
   int _pageSize = 50;
   bool _isShowCam = false;
@@ -46,13 +51,20 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   @override
   void initState() {
     _productBloc = BlocProvider.of<ProductBloc>(context);
-    _productBloc.add(LoadProducts(
+    _productBloc.add(LoadProductsEvent(
       branchId: widget.branchId,
       pageIndex: _pageIndex,
       pageSize: _pageSize,
     ));
-    _scrollController = ScrollController();
     _date = dateUtils.getFormattedDateByCustom(DateTime.now(), "dd_MM_yyyy");
+    _checkSheetCubit = BlocProvider.of<CheckSheetCubit>(context);
+    _checkSheetCubit.getAllBy(
+      branchId: widget.branchId,
+      pageIndex: _pageIndex,
+      pageSize: _pageSize,
+      date: _date.replaceAll("_", "-"),
+    );
+    _scrollController = ScrollController();
     super.initState();
   }
 
@@ -171,7 +183,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     }
   }
 
-  addBarCode(String barcode) {
+  scannerBarcode(String barcode) {
     soundWhenScanned();
     var state = _productBloc.state as ProductLoaded;
     bool isExist = false;
@@ -180,9 +192,11 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
       var element = state.products[i];
       if (element.code == barcode) {
         _productBloc.add(
-          EditProduct(
+          EditProductEvent(
             product: element.copyWith(
-                inventoryCurrent: element.inventoryCurrent + 1),
+              inventoryCurrent: element.inventoryCurrent + 1,
+              isCheck: true,
+            ),
             index: i,
           ),
         );
@@ -196,7 +210,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
           indexFocus = -1;
         });
         _productBloc.add(
-          AddProduct(barcode: barcode, branchId: widget.branchId),
+          AddProductEvent(barcode: barcode, branchId: widget.branchId),
         );
         var currentState = _productBloc.state as ProductLoaded;
 
@@ -232,14 +246,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     controller.scannedDataStream
         .debounce(const Duration(milliseconds: 300))
         .listen((scanData) {
-      addBarCode(scanData.code!);
+      scannerBarcode(scanData.code!);
     });
   }
 
   _beforeDispose() {
     try {
       _productBloc.add(
-        SaveToFileEvent(branchId: widget.branchId),
+        SaveToFileEventEvent(branchId: widget.branchId),
       );
     } catch (e) {}
   }
@@ -270,8 +284,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   }
 
   void _deleteAllProducts() {
-    _productBloc.add(DeleteAllProducts(branchId: widget.branchId, date: _date));
-    _productBloc.add(LoadProducts(branchId: widget.branchId));
+    _productBloc
+        .add(DeleteAllProductsEvent(branchId: widget.branchId, date: _date));
+    _productBloc.add(LoadProductsEvent(branchId: widget.branchId));
   }
 
   @override
@@ -289,7 +304,8 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               showSearch(
                 context: context,
                 delegate: CheckSheetSearchScreen(
-                  productBloc: _productBloc,
+                  searchProdCubit:
+                      BlocProvider.of<SearchProductsCubit>(context),
                   branchId: widget.branchId,
                 ),
               );
@@ -339,6 +355,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
+                  enabled: _date ==
+                      dateUtils.getFormattedDateByCustom(
+                          DateTime.now(), "dd_MM_yyyy"),
                   value: 'SAVE',
                   child: Row(
                     children: [
@@ -352,6 +371,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                 ),
                 //Xoá
                 PopupMenuItem(
+                  enabled: _date ==
+                      dateUtils.getFormattedDateByCustom(
+                          DateTime.now(), "dd_MM_yyyy"),
                   value: 'DELETE',
                   child: Row(
                     children: [
@@ -393,7 +415,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               switch (value) {
                 case 'SAVE':
                   _productBloc.add(
-                    SaveToFileEvent(branchId: widget.branchId),
+                    SaveToFileEventEvent(branchId: widget.branchId),
                   );
                   break;
                 case 'GUIDE':
@@ -441,7 +463,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                 if (scrollNotification.metrics.pixels ==
                     scrollNotification.metrics.maxScrollExtent) {
                   if (_productBloc.state is ProductLoaded) {
-                    _productBloc.add(LoadMoreProducts(
+                    _productBloc.add(LoadMoreProductsEvent(
                         branchId: widget.branchId, pageSize: _pageSize));
                   }
                 }
@@ -479,9 +501,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                               });
                     }
 
-                    if (state is Error) {
-                      return const Center(
-                        child: Text('Có lỗi xảy ra'),
+                    if (state is ProductError) {
+                      return Center(
+                        child: Text(state.error),
                       );
                     }
                     return const Center(
@@ -507,7 +529,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
             flex: 1,
             child: Container(
               padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              color: Colors.blue,
+              color: kPrimaryColor,
               child: const Center(
                 child: Text(
                   'Danh sách phiếu kiểm kho',
@@ -519,21 +541,49 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               ),
             ),
           ),
-          Expanded(
-            flex: 9,
-            child: ListView.builder(
-              itemCount: 50,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  onTap: () {
-                    setState(() {
-                      _date = dateUtils.getFormattedDateByCustom(DateTime(2022,12, index), "dd_MM_yyyy");
-                    });
-                  },
-                  title: Text('Phiếu kiểm kho $index'),
+          BlocBuilder<CheckSheetCubit, CheckSheetState>(
+            builder: (context, state) {
+              if (state is CheckSheetInitial) {
+                return const Center(
+                  child: CircularProgressIndicator(),
                 );
-              },
-            ),
+              }
+              if (state is CheckSheetLoaded) {
+                var checkSheets = state.checkSheets + state.checkSheets;
+                return checkSheets.isEmpty
+                    ? const Center(
+                        child: Text('Không có dữ liệu'),
+                      )
+                    : Expanded(
+                        flex: 9,
+                        child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: state.hasNext && state.isLoading != null
+                                ? checkSheets.length + 1
+                                : checkSheets.length,
+                            addAutomaticKeepAlives: true,
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              if (index < checkSheets.length) {
+                                return _listCheckSheets(
+                                    checkSheet: checkSheets[index],
+                                    index: index);
+                              }
+                              return _loadingSection();
+                            }),
+                      );
+              }
+
+              if (state is CheckSheetError) {
+                return Center(
+                  child: Text(state.error),
+                );
+              }
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
           ),
         ],
       ),
@@ -610,7 +660,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Image.network(
-                      product.image ?? '',
+                      product.image,
                       width: 80,
                       height: 120,
                       fit: BoxFit.cover,
@@ -695,10 +745,75 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     const SizedBox(
                       height: kDefaultPadding / 4,
                     ),
-                    Text(
-                      "Tồn thực tế: ${(product.inventoryCurrent.toInt())}",
-                      style: kTextAveHev14.copyWith(
-                          color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                    Row(
+                      children: [
+                        Text(
+                          "Tồn thực tế: ${(product.inventoryCurrent.toInt())}",
+                          style: kTextAveHev14.copyWith(
+                              color: kColorBlack.withOpacity(0.6),
+                              fontSize: 14),
+                        ),
+                        10.widthBox,
+                        //minus
+                        InkWell(
+                          onTap: () {
+                            if (product.inventoryCurrent > 0) {
+                              _productBloc.add(
+                                EditProductEvent(
+                                  product: product.copyWith(
+                                    inventoryCurrent:
+                                        product.inventoryCurrent - 1,
+                                    isCheck: true,
+                                  ),
+                                  index: index,
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            height: 15,
+                            width: 15,
+                            decoration: BoxDecoration(
+                              color: kColorRed,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Icon(
+                              Icons.remove,
+                              color: Colors.white,
+                              size: 10,
+                            ),
+                          ),
+                        ),
+                        10.widthBox,
+                        //plus
+                        InkWell(
+                          onTap: () {
+                            _productBloc.add(
+                              EditProductEvent(
+                                product: product.copyWith(
+                                  inventoryCurrent:
+                                      product.inventoryCurrent + 1,
+                                  isCheck: true,
+                                ),
+                                index: index,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 15,
+                            width: 15,
+                            decoration: BoxDecoration(
+                              color: kColorGreen,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 10,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(
                       height: kDefaultPadding / 4,
@@ -715,6 +830,40 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                 ),
               )
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _listCheckSheets({required CheckSheetDTO checkSheet, index}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: kColorBlack.withOpacity(0.1),
+              ),
+            ],
+          ),
+          child: ListTile(
+            //number index,
+            leading: CircleAvatar(
+              backgroundColor: kPrimaryColor.withOpacity(0.5),
+              child: Text(
+                "${index + 1}",
+                style: kTextAveHev14.copyWith(color: kColorBlack),
+              ),
+            ),
+            title: Text(
+              "Thời gian ${checkSheet.date}",
+              style: kTextAveHev14.copyWith(color: kColorBlack),
+            ),
           ),
         ),
       ),

@@ -51,15 +51,10 @@ dependencies:
   google_fonts: ^3.0.1
   image_picker: ^0.8.6
   permission_handler: ^10.2.0
-  flutter_ringtone_player: ^3.2.0
   audioplayers: ^1.1.1
-  ai_barcode: ^3.2.4
   fluttertoast: 8.1.2
-  double_back_to_close_app: ^2.1.0
-  overlay_support: ^2.1.0
   connectivity: ^3.0.6
   flutter_signature_pad: ^3.0.1
-  gallery_saver: ^2.3.2
   image_gallery_saver: ^1.7.1
   intl: ^0.17.0
   qr_code_scanner: ^1.0.1

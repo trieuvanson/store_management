@@ -1,23 +1,23 @@
-import 'dart:convert';
-
 class Expiry {
   int? id;
   String? date;
-  int? quantity;
+  double? quantity;
 
   Expiry({this.id, this.date, this.quantity});
 
   factory Expiry.fromJson(Map<String, dynamic> json) {
     return Expiry(
       id: json['id'],
-      date: json['date'],
-      quantity: json['quantity']??0,
+      date: (json['date'] != null && (json['date'] as String).length > 10)
+          ? (json['date'] as String).substring(0, 10)
+          : json['date'],
+      quantity: json['quantity'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id ?? -1,
       'date': date,
       'quantity': quantity,
     };
@@ -43,9 +43,7 @@ class ProductResponse {
         pageIndex: json["pageIndex"],
         pageSize: json["pageSize"],
         data: json['data'] != null
-            ? (json['data'] as List)
-            .map((e) => ProductDTO.fromJson(e))
-            .toList()
+            ? (json['data'] as List).map((e) => ProductDTO.fromJson(e)).toList()
             : null,
       );
 
@@ -68,6 +66,7 @@ class ProductDTO {
   double inventoryCurrent;
   String image;
   List<Expiry>? expires;
+  bool isCheck;
 
   ProductDTO({
     this.id,
@@ -78,6 +77,7 @@ class ProductDTO {
     this.inventoryCurrent = 0.0,
     this.image = '',
     this.expires,
+    this.isCheck = false,
   });
 
   factory ProductDTO.fromJson(Map<String, dynamic> json) {
@@ -88,7 +88,7 @@ class ProductDTO {
       price: json['price'],
       inventory: json['inventory'],
       inventoryCurrent: json['inventoryCurrent'],
-      image: json['image'],
+      image: json['image'] ?? '',
       expires: json['hanSuDungAPIs'] != null
           ? (json['hanSuDungAPIs'] as List)
               .map((e) => Expiry.fromJson(e))
@@ -123,6 +123,7 @@ class ProductDTO {
     double? inventoryCurrent,
     String? image,
     List<Expiry>? expires,
+    bool? isCheck,
   }) {
     return ProductDTO(
       id: id ?? this.id,
@@ -133,6 +134,7 @@ class ProductDTO {
       inventoryCurrent: inventoryCurrent ?? this.inventoryCurrent,
       image: image ?? this.image,
       expires: expires ?? this.expires,
+      isCheck: isCheck ?? this.isCheck,
     );
   }
 

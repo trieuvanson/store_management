@@ -20,7 +20,6 @@ import '../model/product_dto.dart';
 class CheckSheetDetailScreen extends StatefulWidget {
   static const String routeName =
       '${CheckSheetProductsScreen.routeName}/product-detail-screen/:checkSheetId';
-
   final ProductDTO product;
   final int index;
 
@@ -69,8 +68,7 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
       image: _imageUrl,
       expires: _expires,
     );
-    _productBloc.add(EditProduct(product: product, index: widget.index, action: "DETAIL"));
-    Navigator.pop(context);
+    _productBloc.add(EditProductEvent(product: product, index: widget.index, action: "DETAIL"));
   }
 
 
@@ -100,6 +98,12 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thông tin sản phẩm'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Get.close(1);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -308,7 +312,7 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
                     20.heightBox,
                     TextFormField(
                         keyboardType: TextInputType.number,
-                        initialValue: _expires[index].quantity.toString(),
+                        initialValue: _expires[index].quantity!.toInt().toString(),
                         decoration: const InputDecoration(
                           labelText: 'Số lượng',
                           border: OutlineInputBorder(),
@@ -322,7 +326,7 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
                               });
                             } else {
                               setState(() {
-                                _expires[index].quantity = int.parse(value);
+                                _expires[index].quantity = double.parse(value);
                               });
                             }
                           } catch (e) {}
@@ -361,7 +365,7 @@ class AddExpiryDialog extends StatefulWidget {
 class _AddExpiryDialogState extends State<AddExpiryDialog> {
   final _formKey = GlobalKey<FormState>();
   late DateTime _manufacturingDate;
-  late int _quantity;
+  late double _quantity;
 
   @override
   void initState() {
@@ -442,7 +446,7 @@ class _AddExpiryDialogState extends State<AddExpiryDialog> {
                     });
                   } else {
                     setState(() {
-                      _quantity = int.parse(value);
+                      _quantity = double.parse(value);
                     });
                   }
                 },

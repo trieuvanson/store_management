@@ -67,6 +67,7 @@ abstract class AbstractRepository {
       int? branchId}) async {
     final String _url = finalUrl ?? baseURL;
     try {
+      print('$_url$url ${data ?? ''}');
       return await _dio.put(
         _url + url,
         data: data,

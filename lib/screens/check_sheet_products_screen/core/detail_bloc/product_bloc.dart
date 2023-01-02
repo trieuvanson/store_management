@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,18 +23,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductRepository productRepository;
 
   ProductBloc(this.productRepository) : super(ProductInitial()) {
-    on<LoadProducts>(_onLoad);
-    on<SearchProducts>(_onSearch);
-    on<EditProduct>(_onEdit);
-    on<AddProduct>(_onAdd);
-    on<UpdateProduct>(_onUpdate);
-    on<DeleteProduct>(_onDelete);
-    on<LoadMoreProducts>(_onLoadMore,
+    on<LoadProductsEvent>(_onLoad);
+    on<EditProductEvent>(_onEdit);
+    on<AddProductEvent>(_onAdd);
+    on<AddProductDTOEvent>(_onAddEdit);
+    on<UpdateProductEvent>(_onUpdate);
+    on<DeleteProductEvent>(_onDelete);
+    on<LoadMoreProductsEvent>(_onLoadMore,
         transformer: throttleDroppable(const Duration(milliseconds: 100)));
-    on<LoadMoreSearchProducts>(_onLoadMoreSearch,
-        transformer: throttleDroppable(const Duration(milliseconds: 100)));
-    on<SaveToFileEvent>(_onSaveToFile);
-    on<DeleteAllProducts>(_onDeleteAllProducts);
+    on<SaveToFileEventEvent>(_onSaveToFile);
+    on<DeleteAllProductsEvent>(_onDeleteAllProducts);
   }
 
   EventTransformer<E> throttleDroppable<E>(Duration duration) {
@@ -42,7 +41,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     };
   }
 
-  _onLoad(LoadProducts event, Emitter<ProductState> emit) async {
+  _onLoad(LoadProductsEvent event, Emitter<ProductState> emit) async {
     try {
       //check if file saved
       List<dynamic> dataMap =
@@ -64,34 +63,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(
             products: newProducts,
             nextPage: event.pageIndex! + 1,
-            hasNext: true));
+            hasNext: true,
+            isLoading: "more"));
         return;
       }
     } catch (e) {
-      print(e);
-      emit(ProductError(e.toString()));
+      emit(ProductError("Không có dữ liệu"));
     }
   }
 
-  _onSearch(SearchProducts event, Emitter<ProductState> emit) async {
-    try {
-      var products = await productRepository.search(event.query,
-          branchId: event.branchId,
-          pageIndex: event.pageIndex,
-          pageSize: event.pageSize);
-      if (products != null && products.isNotEmpty) {
-        emit(ProductLoadedSearch(
-            products: products, nextPage: event.pageIndex! + 1, hasNext: true));
-      } else {
-        emit(ProductLoadedSearch(products: products, hasNext: false, nextPage: event.pageIndex! + 1));
-      }
-    } catch (e) {
-      print(e);
-      emit(ProductError(e.toString()));
-    }
-  }
-
-  void _onAdd(AddProduct event, Emitter<ProductState> emit) async {
+  void _onAdd(AddProductEvent event, Emitter<ProductState> emit) async {
     try {
       ProductLoaded currentState = state as ProductLoaded;
       final product =
@@ -104,16 +85,45 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(
             products: newProducts,
             nextPage: currentState.nextPage,
-            hasNext: currentState.hasNext));
+            hasNext: currentState.hasNext,
+            isLoading: "more"));
         return;
       }
       showToastErr('Không tìm thấy sản phẩm');
     } catch (e) {
-      showToastErr("Có lỗi xảy ra không thể thêm dữ liệu");
+      if ((e as DioError).response!.statusCode == 400) {
+        showToastErr('Sản phẩm không tồn tại');
+      } else {
+        showToastErr("Có lỗi xảy ra không thể thêm dữ liệu");
+      }
     }
   }
 
-  void _onUpdate(UpdateProduct event, Emitter<ProductState> emit) async {
+  void _onAddEdit(AddProductDTOEvent event, Emitter<ProductState> emit) async {
+    ProductLoaded currentState = state as ProductLoaded;
+    var products = List<ProductDTO>.from(currentState.products);
+    bool checkExist =
+        products.any((element) => element.code == event.product.code);
+    if (checkExist) {
+      Fluttertoast.showToast(
+          msg: 'Sản phẩm đã tồn tại',
+          toastLength: Toast.LENGTH_SHORT,
+          backgroundColor: Colors.red);
+    } else {
+      products.add(event.product);
+      emit(ProductLoaded(
+          products: products,
+          nextPage: currentState.nextPage,
+          hasNext: currentState.hasNext,
+          isLoading: "more"));
+      Fluttertoast.showToast(
+          msg: 'Thêm sản phẩm thành công',
+          toastLength: Toast.LENGTH_SHORT,
+          backgroundColor: Colors.green);
+    }
+  }
+
+  void _onUpdate(UpdateProductEvent event, Emitter<ProductState> emit) async {
     try {
       final product = await productRepository.update(event.product);
       if (product != null) {
@@ -126,7 +136,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     }
   }
 
-  void _onDelete(DeleteProduct event, Emitter<ProductState> emit) async {
+  void _onDelete(DeleteProductEvent event, Emitter<ProductState> emit) async {
     try {
       final product = await productRepository.delete(event.product);
       emit(ProductDeleted(message: "Xóa thành công"));
@@ -135,7 +145,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     }
   }
 
-  void _onLoadMore(LoadMoreProducts event, Emitter<ProductState> emit) async {
+  void _onLoadMore(
+      LoadMoreProductsEvent event, Emitter<ProductState> emit) async {
     try {
       ProductLoaded currentState = state as ProductLoaded;
       if (currentState.hasNext) {
@@ -156,7 +167,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             isLoading: products.isNotEmpty ? 'more' : null,
           ));
           Fluttertoast.showToast(
-              msg: "Đang tải trang ${currentState.nextPage}");
+              msg: "Đang tải trang ${currentState.nextPage}",
+              toastLength: Toast.LENGTH_SHORT);
           return;
         } else {
           emit(ProductLoaded(
@@ -165,71 +177,49 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
               hasNext: false));
         }
       } else {
-        Fluttertoast.showToast(msg: "Không còn dữ liệu");
+        Fluttertoast.showToast(
+            msg: "Không còn dữ liệu", toastLength: Toast.LENGTH_SHORT);
       }
     } catch (e) {
       Get.snackbar("Lỗi", e.toString());
     }
   }
 
-  void _onLoadMoreSearch(
-      LoadMoreSearchProducts event, Emitter<ProductState> emit) async {
+  void _onEdit(EditProductEvent event, Emitter<ProductState> emit) async {
     try {
       ProductLoaded currentState = state as ProductLoaded;
-      if (currentState.hasNext) {
-        final products = await productRepository.search(event.query,
-            branchId: event.branchId,
-            pageIndex: currentState.nextPage,
-            pageSize: event.pageSize);
-        var size1 = products.length;
-        if (products != null && products.isNotEmpty) {
-          List<ProductDTO> newProducts = List.from(currentState.products);
-          //Xoá bỏ nếu như danh sách products mới có phần tử trùng với cũ
-          for (var element in newProducts) {
-            products.removeWhere((item) => element.code == item.code);
-          }
-          newProducts.addAll(products);
-          emit(ProductLoadedSearch(
-            products: newProducts,
-            nextPage: currentState.nextPage + 1,
-            hasNext: event.pageSize! == size1,
-            isLoading: products.isNotEmpty ? 'more' : null,
-          ));
-          Fluttertoast.showToast(
-              msg: "Đang tải trang ${currentState.nextPage}");
-          return;
-        } else {
-          emit(ProductLoadedSearch(
-              products: currentState.products,
-              nextPage: currentState.nextPage + 1,
-              hasNext: false));
-        }
+      List<ProductDTO> newProducts = List.from(currentState.products);
+      // var updateProduct = await productRepository.updateWithParams(
+      //     storeDto: event.product, branchId: event.branchId);
+      newProducts[event.index] = event.product;
+      emit(
+        ProductLoaded(
+          products: newProducts,
+          nextPage: currentState.nextPage,
+          hasNext: currentState.hasNext,
+          isLoading: "more",
+        ),
+      );
+      if (event.action == null) {
+        Fluttertoast.showToast(
+          msg:
+              "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}",
+          toastLength: Toast.LENGTH_SHORT,
+          backgroundColor: Colors.green,
+        );
       } else {
-        Fluttertoast.showToast(msg: "Không còn dữ liệu");
+        Get.back();
+        Fluttertoast.showToast(msg: "Thành công!");
       }
     } catch (e) {
-      Get.snackbar("Lỗi", e.toString());
-    }
-  }
-
-  void _onEdit(EditProduct event, Emitter<ProductState> emit) async {
-    ProductLoaded currentState = state as ProductLoaded;
-    List<ProductDTO> newProducts = List.from(currentState.products);
-    newProducts[event.index] = event.product;
-    emit(ProductLoaded(
-        products: newProducts,
-        nextPage: currentState.nextPage,
-        hasNext: currentState.hasNext));
-    if (event.action == null) {
       Fluttertoast.showToast(
-          msg:
-              "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}");
-    } else {
-      Fluttertoast.showToast(msg: "Thành công!");
+          msg: "Không thể cập nhật sản phẩm, vui lòng thử lại",
+          toastLength: Toast.LENGTH_SHORT);
     }
   }
 
-  void _onSaveToFile(SaveToFileEvent event, Emitter<ProductState> emit) async {
+  void _onSaveToFile(
+      SaveToFileEventEvent event, Emitter<ProductState> emit) async {
     try {
       ProductLoaded currentState = state as ProductLoaded;
       var fileName = _fileName(event.branchId);
@@ -248,22 +238,31 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   void _onDeleteAllProducts(
-      DeleteAllProducts event, Emitter<ProductState> emit) async {
+      DeleteAllProductsEvent event, Emitter<ProductState> emit) async {
     try {
       ProductLoaded currentState = state as ProductLoaded;
       var fileName = _fileName(event.branchId, date: event.date);
       bool deleteBefore = await fileUtils.removeFile(fileName);
-      emit(ProductLoaded(
-          products: [],
-          nextPage: currentState.nextPage,
-          hasNext: currentState.hasNext));
+      if (deleteBefore) {
+        emit(ProductLoaded(
+            products: [],
+            nextPage: currentState.nextPage,
+            hasNext: currentState.hasNext));
+        Fluttertoast.showToast(
+            msg: "Đã xoá dữ liệu hiện tại ngày ${event.date}",
+            backgroundColor: Colors.green);
+        return;
+      }
       Fluttertoast.showToast(
-          msg: "Đã xoá dữ liệu hiện tại ngày ${event.date}", backgroundColor: Colors.green);
+          msg: "Không có dữ liệu ngày ${event.date}",
+          backgroundColor: Colors.red);
     } catch (e) {}
   }
 
   String _fileName(int branchId, {String? date}) {
     date ??= dateUtils.getFormattedDateByCustom(DateTime.now(), "dd_MM_yyyy");
-    return "${branchId}_check_sheet_products_$date".replaceAll(" ", "").replaceAll('/', '_');
+    return "${branchId}_check_sheet_products_$date"
+        .replaceAll(" ", "")
+        .replaceAll('/', '_');
   }
 }

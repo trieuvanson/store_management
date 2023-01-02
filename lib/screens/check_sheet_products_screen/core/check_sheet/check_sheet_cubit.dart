@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 
 import '../../repository/check_sheet_repository.dart';
 

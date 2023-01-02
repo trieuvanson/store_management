@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:store_management/screens/auth_screen/model/auth_response.dart';
+import '/screens/auth_screen/model/auth_response.dart';
 
 import '../../../utils/secure_storage.dart';
 import '../repository/auth_repostory.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:store_management/screens/auth_screen/core/auth_bloc.dart';
+import '/screens/auth_screen/core/auth_bloc.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../../../constants/contains.dart';

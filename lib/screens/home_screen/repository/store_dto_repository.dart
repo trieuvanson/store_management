@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:store_management/repositories/abstract_repository.dart';
-import 'package:store_management/screens/home_screen/model/store_dto.dart';
+import '/repositories/abstract_repository.dart';
+import '/screens/home_screen/model/store_dto.dart';
 
 import '../../../repositories/abstract_interface.dart';
 

@@ -6,13 +6,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
-import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
-import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
-import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
-import 'package:store_management/utils/date_utils.dart';
+import '/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
+import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import '/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
+import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import '/screens/check_sheet_products_screen/model/product_dto.dart';
+import '/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
+import '/utils/date_utils.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -35,7 +35,7 @@ class CheckSheetProductsScreen extends StatefulWidget {
 
 class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late Barcode result;
-  QRViewController? _qrViewController = null;
+  QRViewController? _qrViewController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -178,9 +178,11 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   initPermissions() async {
     var cameraStatus = await Permission.camera.status;
+    PermissionStatus? allow;
     if (!cameraStatus.isGranted) {
-      await Permission.camera.request();
+      allow = await Permission.camera.request();
     }
+    return allow == null;
   }
 
   scannerBarcode(String barcode) {
@@ -228,10 +230,21 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     print('Sound');
   }
 
-  hideShowCamera() {
-    setState(() {
-      _isShowCam = !_isShowCam;
-    });
+  hideShowCamera() async {
+    if (await initPermissions()) {
+      setState(() {
+        _isShowCam = !_isShowCam;
+      });
+    } else {
+      Get.snackbar(
+        'Thông báo',
+        'Bạn chưa cấp quyền truy cập camera',
+        animationDuration: const Duration(milliseconds: 500),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   void _onQRViewCreated(QRViewController controller) {
@@ -525,18 +538,15 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     return Drawer(
       child: Column(
         children: [
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              color: kPrimaryColor,
-              child: const Center(
-                child: Text(
-                  'Danh sách phiếu kiểm kho',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
+          Container(
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            color: kPrimaryColor,
+            child: const Center(
+              child: Text(
+                'Danh sách phiếu kiểm kho',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -551,11 +561,12 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               if (state is CheckSheetLoaded) {
                 var checkSheets = state.checkSheets + state.checkSheets;
                 return checkSheets.isEmpty
-                    ? const Center(
-                        child: Text('Không có dữ liệu'),
+                    ? const Expanded(
+                        child: Center(
+                          child: Text('Không có dữ liệu'),
+                        ),
                       )
                     : Expanded(
-                        flex: 9,
                         child: ListView.builder(
                             controller: _scrollController,
                             itemCount: state.hasNext && state.isLoading != null

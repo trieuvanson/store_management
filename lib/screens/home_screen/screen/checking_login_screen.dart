@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:store_management/constants/contains.dart';
-import 'package:store_management/screens/screens.dart';
+import '/constants/contains.dart';
+import '/screens/screens.dart';
 
 import '../../auth_screen/core/auth_bloc.dart';
 

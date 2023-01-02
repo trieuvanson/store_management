@@ -1,4 +1,4 @@
-import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
+import '/screens/check_sheet_products_screen/model/product_dto.dart';
 
 class CheckSheetDetailDTO {
   int? id;

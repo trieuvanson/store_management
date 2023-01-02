@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
-import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
-import 'package:store_management/utils/utils.dart';
+import '/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
+import '/utils/utils.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 import '../../../../utils/date_utils.dart';

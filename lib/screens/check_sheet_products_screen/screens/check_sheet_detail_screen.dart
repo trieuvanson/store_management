@@ -7,12 +7,12 @@ import 'package:flutter_signature_pad/flutter_signature_pad.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:store_management/constants/contains.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
-import 'package:store_management/screens/screens.dart';
-import 'package:store_management/utils/date_utils.dart';
-import 'package:store_management/utils/utils.dart';
-import 'package:store_management/widgets/widgets.dart';
+import '/constants/contains.dart';
+import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import '/screens/screens.dart';
+import '/utils/date_utils.dart';
+import '/utils/utils.dart';
+import '/widgets/widgets.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../model/product_dto.dart';

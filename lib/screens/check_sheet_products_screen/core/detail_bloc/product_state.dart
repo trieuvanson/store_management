@@ -20,9 +20,10 @@ class ProductLoaded extends ProductState {
   int nextPage = 1;
   bool hasNext = true;
   String? isLoading = null;
+  int? checkSheetId;
 
   ProductLoaded(
-      {required this.products, required this.nextPage, required this.hasNext, this.isLoading});
+      {required this.products, required this.nextPage, required this.hasNext, this.isLoading, this.checkSheetId});
 
   ProductLoaded copyWith(
       {List<ProductDTO>? products, int? nextPage, bool? hasNext}) {

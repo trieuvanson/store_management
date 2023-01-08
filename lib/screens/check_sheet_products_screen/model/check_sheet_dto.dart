@@ -1,29 +1,32 @@
+import 'package:store_management/utils/date_utils.dart';
+
 class CheckSheetDtoResponse {
   int? totalRecord;
   int? pageIndex;
   int? pageSize;
   List<CheckSheetDTO>? data;
 
-  CheckSheetDtoResponse({this.totalRecord, this.pageIndex, this.pageSize, this.data});
+  CheckSheetDtoResponse(
+      {this.totalRecord, this.pageIndex, this.pageSize, this.data});
 
-  factory CheckSheetDtoResponse.fromJson(Map<String, dynamic> json) {
-    var dataJson = json['data'] as List;
-    List<CheckSheetDTO> data = dataJson.map((i) => CheckSheetDTO.fromJson(i)).toList();
-
-    return CheckSheetDtoResponse(
-      totalRecord: json['totalRecord'],
-      pageIndex: json['pageIndex'],
-      pageSize: json['pageSize'],
-      data: data,
-    );
-  }
+  factory CheckSheetDtoResponse.fromJson(Map<String, dynamic> json) =>
+      CheckSheetDtoResponse(
+        totalRecord: json['totalRecord'],
+        pageIndex: json['pageIndex'],
+        pageSize: json['pageSize'],
+        data: json['data'] != null && json['data'] is List && json['data'].length > 0
+            ? (json['data'] as List)
+                .map((e) => CheckSheetDTO.fromJson(e))
+                .toList()
+            : [],
+      );
 
   Map<String, dynamic> toJson() => {
-    'totalRecord': totalRecord,
-    'pageIndex': pageIndex,
-    'pageSize': pageSize,
-    'data': data,
-  };
+        'totalRecord': totalRecord,
+        'pageIndex': pageIndex,
+        'pageSize': pageSize,
+        'data': data,
+      };
 }
 
 class CheckSheetDTO {
@@ -33,7 +36,8 @@ class CheckSheetDTO {
   String? date;
   String? branchName;
 
-  CheckSheetDTO({this.id, this.code, this.createByCode, this.date, this.branchName});
+  CheckSheetDTO(
+      {this.id, this.code, this.createByCode, this.date, this.branchName});
 
   factory CheckSheetDTO.fromJson(Map<String, dynamic> json) {
     return CheckSheetDTO(
@@ -46,10 +50,10 @@ class CheckSheetDTO {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'code': code,
-    'createByCode': createByCode,
-    'date': date,
-    'branchName': branchName,
-  };
+        'id': id,
+        'code': code,
+        'createByCode': createByCode,
+        'date': date,
+        'branchName': branchName,
+      };
 }

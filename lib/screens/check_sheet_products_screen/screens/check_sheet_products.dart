@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,117 +44,31 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late ProductBloc _productBloc;
   late CheckSheetCubit _checkSheetCubit;
   int _pageIndex = 1;
-  int _pageSize = 50;
+  int _pageSize = 10;
   bool _isShowCam = false;
   int indexFocus = -1;
   late String _date;
 
   @override
   void initState() {
-    _productBloc = BlocProvider.of<ProductBloc>(context);
-    _productBloc.add(LoadProductsEvent(
-      branchId: widget.branchId,
-      pageIndex: _pageIndex,
-      pageSize: _pageSize,
-    ));
-    _date = dateUtils.getFormattedDateByCustom(DateTime.now(), "dd_MM_yyyy");
-    _checkSheetCubit = BlocProvider.of<CheckSheetCubit>(context);
-    _checkSheetCubit.getAllBy(
-      branchId: widget.branchId,
-      pageIndex: _pageIndex,
-      pageSize: _pageSize,
-      date: _date.replaceAll("_", "-"),
-    );
+    _date = dateUtils.getFormattedDateByCustom(
+        DateTime.now(), "dd/MM/yyyy HH:mm:ss");
+
+    _productBloc = BlocProvider.of<ProductBloc>(context)
+      ..add(LoadProductsEvent(
+        branchId: widget.branchId,
+        pageIndex: _pageIndex,
+        pageSize: _pageSize,
+      ));
+    _checkSheetCubit = BlocProvider.of<CheckSheetCubit>(context)
+      ..getAllBy(
+        branchId: widget.branchId,
+        pageIndex: _pageIndex,
+        pageSize: _pageSize,
+        date: _date,
+      );
     _scrollController = ScrollController();
     super.initState();
-  }
-
-  void _bottomGuide() {
-    Get.bottomSheet(
-      Container(
-        constraints: const BoxConstraints(
-          minHeight: 200,
-        ),
-        color: Colors.white,
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              'Hướng dẫn',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '1. Bấm vào biểu tượng camera để quét mã vạch',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '2. Đưa mã vạch của sản phẩm lên camera',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '3. Sản phẩm chưa có trong danh sách sẽ được thêm vào, ngược lại sẽ được cập nhật số lượng',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '4. Lưu dữ liệu để mỗi khi vào danh sách sản phẩm sẽ hiển thị dữ liệu đã được lưu',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '5. Xoá dữ liệu để cập nhật lại thông số mới',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              '6. Ấn vào biểu tượng X để đóng camera',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: const Text('Đã hiểu'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   _scrollToItem(int index, final data) {
@@ -252,10 +167,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _beforeDispose() {
     try {
-      _productBloc.add(
-        SaveToFileEventEvent(branchId: widget.branchId),
-      );
-    } catch (e) {}
+      if (_productBloc.state is ProductLoaded) {
+        var state = _productBloc.state as ProductLoaded;
+        if (state.products.isNotEmpty) {
+          _checkSheetCubit.createWithBody(
+              products: state.products, branchId: widget.branchId, date: _date);
+        }
+      }
+        } catch (e) {}
   }
 
   @override
@@ -284,9 +203,46 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   }
 
   void _deleteAllProducts() {
-    _productBloc
-        .add(DeleteAllProductsEvent(branchId: widget.branchId, date: _date));
-    _productBloc.add(LoadProductsEvent(branchId: widget.branchId));
+    _checkSheetCubit.delete(widget.branchId, _date);
+    _productBloc.add(LoadProductsEvent(
+      branchId: widget.branchId,
+      pageIndex: _pageIndex,
+      pageSize: _pageSize,
+    ));
+  }
+
+  void _checkSheetCreate() {
+    if (_productBloc.state is ProductLoaded) {
+      var state = _productBloc.state as ProductLoaded;
+      if (state.products.isNotEmpty) {
+        _checkSheetCubit.createWithBody(
+            products: state.products, branchId: widget.branchId, date: _date);
+      } else {
+        Fluttertoast.showToast(
+          msg: 'Không có sản phẩm để lưu',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+      return;
+    }
+    Get.snackbar(
+      "Thông báo",
+      "Có lỗi xảy ra, vui lòng thử lại",
+      snackPosition: SnackPosition.BOTTOM,
+      animationDuration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1500),
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  toggle(date) {
+    String newDate = date;
   }
 
   @override
@@ -355,9 +311,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem(
-                  enabled: _date ==
+                  enabled: _date.substring(0, 10) ==
                       dateUtils.getFormattedDateByCustom(
-                          DateTime.now(), "dd_MM_yyyy"),
+                          DateTime.now(), "dd/MM/yyyy"),
                   value: 'SAVE',
                   child: Row(
                     children: [
@@ -371,9 +327,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                 ),
                 //Xoá
                 PopupMenuItem(
-                  enabled: _date ==
+                  enabled: _date.substring(0, 10) ==
                       dateUtils.getFormattedDateByCustom(
-                          DateTime.now(), "dd_MM_yyyy"),
+                          DateTime.now(), "dd/MM/yyyy"),
                   value: 'DELETE',
                   child: Row(
                     children: [
@@ -414,9 +370,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
             onSelected: (value) {
               switch (value) {
                 case 'SAVE':
-                  _productBloc.add(
-                    SaveToFileEventEvent(branchId: widget.branchId),
-                  );
+                  _checkSheetCreate();
                   break;
                 case 'GUIDE':
                   _bottomGuide();
@@ -502,8 +456,43 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     }
 
                     if (state is ProductError) {
-                      return Center(
-                        child: Text(state.error),
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error,
+                            color: Colors.red,
+                            size: 60,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            state.error,
+                            style: const TextStyle(
+                              fontSize: 20,
+                            ),
+                          ),
+                          //thử lại
+                          TextButton(
+                            onPressed: () {
+                              //change _productBloc state to loading
+                              _productBloc.add(ProductEventLoading());
+                              _productBloc.add(LoadProductsEvent(
+                                branchId: widget.branchId,
+                                pageIndex: _pageIndex,
+                                pageSize: _pageSize,
+                              ));
+                            },
+                            child: const Text(
+                              'Thử lại',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }
                     return const Center(
@@ -521,12 +510,99 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     );
   }
 
+  void _bottomGuide() {
+    Get.bottomSheet(
+      Container(
+        constraints: const BoxConstraints(
+          minHeight: 200,
+        ),
+        color: Colors.white,
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              'Hướng dẫn',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '1. Bấm vào biểu tượng camera để quét mã vạch',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '2. Đưa mã vạch của sản phẩm lên camera',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '3. Sản phẩm chưa có trong danh sách sẽ được thêm vào, ngược lại sẽ được cập nhật số lượng',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '4. Lưu dữ liệu để mỗi khi vào danh sách sản phẩm sẽ hiển thị dữ liệu đã được lưu',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '5. Xoá dữ liệu để cập nhật lại thông số mới',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '6. Ấn vào biểu tượng X để đóng camera',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text('Đã hiểu'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   _endDrawer() {
     return Drawer(
       child: Column(
         children: [
           Expanded(
-            flex: 1,
             child: Container(
               padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
               color: kPrimaryColor,
@@ -543,16 +619,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
           ),
           BlocBuilder<CheckSheetCubit, CheckSheetState>(
             builder: (context, state) {
-              if (state is CheckSheetInitial) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
               if (state is CheckSheetLoaded) {
-                var checkSheets = state.checkSheets + state.checkSheets;
+                var checkSheets = state.checkSheets;
                 return checkSheets.isEmpty
-                    ? const Center(
-                        child: Text('Không có dữ liệu'),
+                    ? const Expanded(
+                        flex: 9,
+                        child: Center(
+                          child: Text('Không có dữ liệu'),
+                        ),
                       )
                     : Expanded(
                         flex: 9,
@@ -576,12 +650,34 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               }
 
               if (state is CheckSheetError) {
-                return Center(
-                  child: Text(state.error),
+                return Expanded(
+                  flex: 9,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(state.error),
+                      //thử lại
+                      TextButton(
+                        onPressed: () {
+                          _checkSheetCubit.loading();
+                          _checkSheetCubit.getAllBy(
+                            branchId: widget.branchId,
+                            pageIndex: _pageIndex,
+                            pageSize: _pageSize,
+                            date: _date,
+                          );
+                        },
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
                 );
               }
-              return const Center(
-                child: CircularProgressIndicator(),
+              return const Expanded(
+                flex: 9,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
             },
           ),
@@ -660,7 +756,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Image.network(
-                      product.image,
+                      product.image ?? '',
                       width: 80,
                       height: 120,
                       fit: BoxFit.cover,
@@ -696,7 +792,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${product.name}",
+                      "${product.name} - ${index+1}",
                       style: kTextAveHev14.copyWith(color: kColorBlack),
                     ),
                     const SizedBox(
@@ -840,7 +936,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          _date = checkSheet.date!;
+          var date = checkSheet.date!.length > 10
+              ? checkSheet.date?.substring(0, 10)
+              : checkSheet.date;
+          _productBloc.add(LoadProductsEvent(
+              branchId: widget.branchId, date: date, pageSize: _pageSize));
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
           decoration: BoxDecoration(
@@ -861,7 +964,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               ),
             ),
             title: Text(
-              "Thời gian ${checkSheet.date}",
+              "Ngày ${checkSheet.date}",
               style: kTextAveHev14.copyWith(color: kColorBlack),
             ),
           ),

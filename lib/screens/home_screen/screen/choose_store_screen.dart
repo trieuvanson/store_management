@@ -70,7 +70,6 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
     "timestamp": "2022-12-15T14:45:19.4208364+07:00"
   };
   var _logoutStatus = '';
-  var _stores = [];
 
   var _dataDecode = [];
 
@@ -128,9 +127,13 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
 
   _handleLogout() {
     _logoutStatus = '';
-    GetSnackBar(
-      title: 'Thông báo',
-      message: 'Đang đăng xuất',
+    // GetSnackBar(
+    //   ).show();
+
+    Get.snackbar(
+      'Thông báo',
+      'Đang đăng xuất',
+      colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.green,
       margin: const EdgeInsets.all(10),
@@ -158,7 +161,7 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
           Get.offAllNamed(AuthScreen.routeName);
         }
       },
-    ).show();
+    );
   }
 
   @override
@@ -222,7 +225,8 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
         padding: const EdgeInsets.all(kDefaultPadding / 2.5),
         child: ListTile(
           onTap: () => {
-            Get.toNamed(CheckSheetProductsScreen.routeName, arguments: item['id']),
+            Get.toNamed(CheckSheetProductsScreen.routeName,
+                arguments: item['id']),
           },
           key: ValueKey(item['id']),
           style: ListTileStyle.list,

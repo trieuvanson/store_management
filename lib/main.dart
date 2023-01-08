@@ -74,6 +74,7 @@ class _StoreManagementAppState extends State<StoreManagementApp> {
             textColor: Colors.white,
             fontSize: 16.0);
         _timer?.cancel();
+        setState(() {});
       }
     });
   }
@@ -93,7 +94,8 @@ class _StoreManagementAppState extends State<StoreManagementApp> {
               AuthBloc(AuthRepository())..add(CheckLoginEvent()),
         ),
         BlocProvider(
-          create: (context) => ProductBloc(ProductRepository()),
+          create: (context) =>
+              ProductBloc(ProductRepository(), CheckSheetRepository()),
         ),
         BlocProvider(
           create: (context) => SearchProductsCubit(ProductRepository()),
@@ -101,7 +103,6 @@ class _StoreManagementAppState extends State<StoreManagementApp> {
         BlocProvider(
           create: (context) => CheckSheetCubit(CheckSheetRepository()),
         ),
-
       ],
       child: GetMaterialApp(
         title: 'Quản lý tồn kho',

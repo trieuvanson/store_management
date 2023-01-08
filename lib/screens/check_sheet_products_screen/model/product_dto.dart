@@ -82,12 +82,12 @@ class ProductDTO {
 
   factory ProductDTO.fromJson(Map<String, dynamic> json) {
     return ProductDTO(
-      id: json['id'],
-      code: json['code'],
-      name: json['name'],
-      price: json['price'],
-      inventory: json['inventory'],
-      inventoryCurrent: json['inventoryCurrent'],
+      id: json['id'] ?? null,
+      code: json['code'] ?? null,
+      name: json['name'] ?? null,
+      price: json['price'] ?? null,
+      inventory: json['inventory'] ?? null,
+      inventoryCurrent: json['inventoryCurrent'] ?? null,
       image: json['image'] ?? '',
       expires: json['hanSuDungAPIs'] != null
           ? (json['hanSuDungAPIs'] as List)

@@ -148,7 +148,6 @@ class _AuthScreenState extends State<AuthScreen> {
             )
           );
         } else if (state.auth != null) {
-          Get.back();
           Get.snackbar(
             "Thông báo",
             "Đăng nhập thành công",
@@ -175,7 +174,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             snackbarStatus: (status) {
               if (status == SnackbarStatus.CLOSED) {
-                Get.offNamed(ChooseStoreScreen.routeName);
+                Get.offAllNamed(ChooseStoreScreen.routeName);
               }
             },
           );

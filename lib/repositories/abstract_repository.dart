@@ -1,10 +1,22 @@
 import 'package:dio/dio.dart';
 
-import '../constants/env.dart';
+import '../constants/env.dart' as env;
+import '../network/interceptor.dart';
 
 abstract class AbstractRepository {
-  final Dio _dio = Dio();
-  final String baseURL = baseUrl!;
+  late Dio _dio;
+  late String baseURL;
+
+  AbstractRepository() {
+    BaseOptions options = BaseOptions(
+      receiveTimeout: 15000,
+      connectTimeout: 20000,
+    );
+
+    _dio = Dio(options);
+    _dio.interceptors.add(LoggingInterceptor());
+    baseURL = env.baseUrl!;
+  }
 
   Future<Response> get(
       {required String url,
@@ -14,7 +26,6 @@ abstract class AbstractRepository {
       int? branchId}) async {
     final String _url = finalUrl ?? baseURL;
     try {
-      print('$_url$url${queryParameters ?? ''}');
       return await _dio.get(
         _url + url,
         options: Options(
@@ -67,7 +78,6 @@ abstract class AbstractRepository {
       int? branchId}) async {
     final String _url = finalUrl ?? baseURL;
     try {
-      print('$_url$url ${data ?? ''}');
       return await _dio.put(
         _url + url,
         data: data,
@@ -94,7 +104,7 @@ abstract class AbstractRepository {
     final String _url = finalUrl ?? baseURL;
     try {
       return await _dio.delete(
-        _url + url,
+        (_url + url),
         options: Options(
           headers: {
             'Content-Type': 'application/json',

@@ -22,8 +22,8 @@ class CheckSheetDetailDTO {
     return {
       'id': id,
       'productAPI': product!.toJson(),
-      'quantityCurrent': quantityCurrent,
-      'price': price,
+      'quantityCurrent': 0,
+      'price': 0,
     };
   }
 

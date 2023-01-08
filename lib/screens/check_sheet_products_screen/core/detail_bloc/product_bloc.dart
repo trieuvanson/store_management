@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
 import 'package:store_management/utils/utils.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -13,6 +14,7 @@ import 'package:stream_transform/stream_transform.dart';
 import '../../../../utils/date_utils.dart';
 import '../../../../utils/flie_utils.dart';
 import '../../model/product_dto.dart';
+import '../../repository/check_sheet_repository.dart';
 import '../../repository/product_repository.dart';
 
 part 'product_event.dart';
@@ -21,8 +23,11 @@ part 'product_state.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductRepository productRepository;
+  CheckSheetRepository checkSheetRepository;
 
-  ProductBloc(this.productRepository) : super(ProductInitial()) {
+  ProductBloc(this.productRepository, this.checkSheetRepository)
+      : super(ProductInitial()) {
+    on<ProductEventLoading>(_loading);
     on<LoadProductsEvent>(_onLoad);
     on<EditProductEvent>(_onEdit);
     on<AddProductEvent>(_onAdd);
@@ -41,19 +46,45 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     };
   }
 
+  _loading(ProductEventLoading event, Emitter<ProductState> emit) async {
+    emit(ProductLoading());
+  }
+
   _onLoad(LoadProductsEvent event, Emitter<ProductState> emit) async {
     try {
       //check if file saved
-      List<dynamic> dataMap =
-          await fileUtils.readDataFromFileJson(_fileName(event.branchId!));
-      List<ProductDTO> productOld =
-          dataMap.map<ProductDTO>((e) => ProductDTO.fromJson(e)).toList();
+      // List<dynamic> dataMap =
+      //     await fileUtils.readDataFromFileJson(_fileName(event.branchId!));
+      // List<ProductDTO> productOld =
+      //     dataMap.map<ProductDTO>((e) => ProductDTO.fromJson(e)).toList();
 
-      //get new
-      var products = await productRepository.getAllBy(
-          event.branchId!, event.pageIndex!, event.pageSize!);
+      print(state);
 
-      if (products != null && products.isEmpty) {
+      CheckSheetDtoResponse isExistCheckSheet =
+          (await checkSheetRepository.getAllBy(
+              branchId: event.branchId!,
+              pageIndex: event.pageIndex!,
+              pageSize: event.pageSize!,
+              date: event.date!));
+      var productOld = [];
+      if (isExistCheckSheet.data!.isNotEmpty) {
+        productOld = await checkSheetRepository.getCheckSheetDetail(
+          branchId: event.branchId!,
+          pageIndex: event.pageIndex!,
+          pageSize: event.pageSize!,
+          checkSheetId: isExistCheckSheet.data![0].id,
+        );
+      }
+      List<ProductDTO> products = [];
+      if (event.date ==
+          dateUtils.getFormattedDateByCustom(DateTime.now(), 'dd/MM/yyyy')) {
+        products = await productRepository.getAllBy(
+            event.branchId!, event.pageIndex!, event.pageSize!);
+      }
+
+      if (products != null &&
+          products.isEmpty &&
+          isExistCheckSheet.data!.isEmpty) {
         emit(ProductLoaded(products: products, hasNext: false, nextPage: 1));
       } else {
         for (var element in productOld) {
@@ -63,12 +94,20 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductLoaded(
             products: newProducts,
             nextPage: event.pageIndex! + 1,
-            hasNext: true,
+            hasNext: newProducts.length >= event.pageSize!,
+            checkSheetId: isExistCheckSheet.data!.isNotEmpty
+                ? isExistCheckSheet.data![0].id
+                : null,
             isLoading: "more"));
-        return;
       }
+      Fluttertoast.showToast(
+          msg: "Đã tải kiểm kho ngày ${event.date}",
+          backgroundColor: Colors.green);
     } catch (e) {
-      emit(ProductError("Không có dữ liệu"));
+      Fluttertoast.showToast(
+          msg: "Lỗi tải kiểm kho ngày ${event.date}",
+          backgroundColor: Colors.red);
+      emit(ProductError("Có lỗi xảy ra, vui lòng thử lại"));
     }
   }
 
@@ -78,7 +117,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final product =
           await productRepository.getOneBy(event.barcode, event.branchId);
       List<ProductDTO> newProducts = List.from(currentState.products);
-      if (product != null && product.id != null) {
+      if (product.id != null) {
         showToastSuccess('Thêm sản phẩm thành công');
         product.inventoryCurrent = product.inventoryCurrent + 1;
         newProducts.add(product);
@@ -150,7 +189,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       ProductLoaded currentState = state as ProductLoaded;
       if (currentState.hasNext) {
-        final products = await productRepository.getAllBy(
+        List<ProductDTO> checkSheetProducts = [];
+        if (currentState.checkSheetId != null) {
+          checkSheetProducts = await checkSheetRepository.getCheckSheetDetail(
+            branchId: event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               branchId!,
+            pageIndex: event.pageIndex!,
+            pageSize: event.pageSize!,
+            checkSheetId: currentState.checkSheetId,
+          );
+        }
+        final products = await                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             productRepository.getAllBy(
             event.branchId!, currentState.nextPage, event.pageSize!);
         var size1 = products.length;
         if (products != null && products.isNotEmpty) {
@@ -159,7 +207,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           for (var element in newProducts) {
             products.removeWhere((item) => element.code == item.code);
           }
-          newProducts.addAll(products);
+          newProducts = [...newProducts, ...products];
+          for (var element in checkSheetProducts) {
+            newProducts.removeWhere((item) => element.code == item.code);
+          }
+          newProducts = [...newProducts, ...checkSheetProducts];
           emit(ProductLoaded(
             products: newProducts,
             nextPage: currentState.nextPage + 1,

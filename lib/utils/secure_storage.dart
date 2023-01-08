@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:store_management/screens/auth_screen/model/auth_response.dart';
+import '/screens/auth_screen/model/auth_response.dart';
 
 class SecureStorageFrave {
   final secureStorage = const FlutterSecureStorage();

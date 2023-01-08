@@ -7,12 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:store_management/screens/auth_screen/repository/auth_repostory.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
-import 'package:store_management/screens/check_sheet_products_screen/repository/check_sheet_repository.dart';
-import 'package:store_management/screens/check_sheet_products_screen/repository/product_repository.dart';
+import '/screens/auth_screen/repository/auth_repostory.dart';
+import '/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
+import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import '/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
+import '/screens/check_sheet_products_screen/repository/check_sheet_repository.dart';
+import '/screens/check_sheet_products_screen/repository/product_repository.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

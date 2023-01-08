@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:store_management/screens/home_screen/repository/store_dto_repository.dart';
+import '/screens/home_screen/repository/store_dto_repository.dart';
 
 import '../../../constants/contains.dart';
 import '../../screens.dart';

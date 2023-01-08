@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meta/meta.dart';
-import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 
 import '../../../../utils/date_utils.dart';
 import '../../model/product_dto.dart';

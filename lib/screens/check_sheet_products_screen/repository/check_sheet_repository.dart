@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:store_management/repositories/abstract_interface.dart';
-import 'package:store_management/repositories/abstract_repository.dart';
-import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import '/repositories/abstract_interface.dart';
+import '/repositories/abstract_repository.dart';
+import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 
 import '../../../utils/date_utils.dart';
 import '../../../utils/secure_storage.dart';

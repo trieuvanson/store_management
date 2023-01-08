@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
-import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
+import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import '/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
 
 import '../../../constants/contains.dart';
 import '../../../utils/utils.dart';

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:store_management/repositories/abstract_repository.dart';
+import '/repositories/abstract_repository.dart';
 
 import '../../../utils/secure_storage.dart';
 import '../model/auth_response.dart';

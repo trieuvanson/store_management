@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
+import 'package:store_management/network/error_handling.dart';
 import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
 import 'package:store_management/utils/utils.dart';
@@ -52,12 +53,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
   _onLoad(LoadProductsEvent event, Emitter<ProductState> emit) async {
     try {
-      //check if file saved
-      // List<dynamic> dataMap =
-      //     await fileUtils.readDataFromFileJson(_fileName(event.branchId!));
-      // List<ProductDTO> productOld =
-      //     dataMap.map<ProductDTO>((e) => ProductDTO.fromJson(e)).toList();
-
       print(state);
 
       CheckSheetDtoResponse isExistCheckSheet =
@@ -107,7 +102,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       Fluttertoast.showToast(
           msg: "Lỗi tải kiểm kho ngày ${event.date}",
           backgroundColor: Colors.red);
-      emit(ProductError("Có lỗi xảy ra, vui lòng thử lại"));
+      emit(ProductError(ErrorHandling.showMessage(e)));
     }
   }
 
@@ -130,11 +125,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
       showToastErr('Không tìm thấy sản phẩm');
     } catch (e) {
-      if ((e as DioError).response!.statusCode == 400) {
-        showToastErr('Sản phẩm không tồn tại');
-      } else {
-        showToastErr("Có lỗi xảy ra không thể thêm dữ liệu");
-      }
+      showToastErr(ErrorHandling.showMessage(e));
     }
   }
 
@@ -171,7 +162,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
       emit(ProductError("Lỗi khi cập nhật dữ liệu"));
     } catch (e) {
-      emit(ProductError(e.toString()));
+      emit(ProductError(ErrorHandling.showMessage(e)));
     }
   }
 
@@ -180,7 +171,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final product = await productRepository.delete(event.product);
       emit(ProductDeleted(message: "Xóa thành công"));
     } catch (e) {
-      emit(ProductError(e.toString()));
+      emit(ProductError(ErrorHandling.showMessage(e)));
     }
   }
 
@@ -192,13 +183,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         List<ProductDTO> checkSheetProducts = [];
         if (currentState.checkSheetId != null) {
           checkSheetProducts = await checkSheetRepository.getCheckSheetDetail(
-            branchId: event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               branchId!,
+            branchId: event.branchId!,
             pageIndex: event.pageIndex!,
             pageSize: event.pageSize!,
             checkSheetId: currentState.checkSheetId,
           );
         }
-        final products = await                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             productRepository.getAllBy(
+        final products = await productRepository.getAllBy(
             event.branchId!, currentState.nextPage, event.pageSize!);
         var size1 = products.length;
         if (products != null && products.isNotEmpty) {
@@ -233,7 +224,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             msg: "Không còn dữ liệu", toastLength: Toast.LENGTH_SHORT);
       }
     } catch (e) {
-      Get.snackbar("Lỗi", e.toString());
+      Get.snackbar("Lỗi", ErrorHandling.showMessage(e));
     }
   }
 
@@ -265,8 +256,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
     } catch (e) {
       Fluttertoast.showToast(
-          msg: "Không thể cập nhật sản phẩm, vui lòng thử lại",
-          toastLength: Toast.LENGTH_SHORT);
+          msg: ErrorHandling.showMessage(e), toastLength: Toast.LENGTH_SHORT);
     }
   }
 
@@ -286,7 +276,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             msg: "Dữ liệu chưa được lưu lại, đã xảy ra lỗi",
             backgroundColor: Colors.red);
       }
-    } catch (e) {}
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: ErrorHandling.showMessage(e), backgroundColor: Colors.red);
+    }
   }
 
   void _onDeleteAllProducts(
@@ -310,6 +303,22 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           backgroundColor: Colors.red);
     } catch (e) {}
   }
+
+  int getIndex(String code) {
+    if (state is ProductLoaded) {
+      ProductLoaded currentState = state as ProductLoaded;
+      for (var i = 0; i < currentState.products.length; i++) {
+        if (currentState.products[i].code == code) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
+
+
+  get index => getIndex;
 
   String _fileName(int branchId, {String? date}) {
     date ??= dateUtils.getFormattedDateByCustom(DateTime.now(), "dd_MM_yyyy");

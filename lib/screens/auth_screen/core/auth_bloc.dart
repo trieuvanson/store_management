@@ -8,6 +8,7 @@ import '../../../utils/secure_storage.dart';
 import '../repository/auth_repostory.dart';
 
 part 'auth_event.dart';
+
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -42,12 +43,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(LoadingAuthState());
       if (await secureStorage.readAuth() != null) {
         // final data = await authRepository.renewLoginController();
-        final data = await secureStorage.readAuth();
-        if (data != null) {
-          await secureStorage.persistAuth(data);
-          emit(state.copyWith(auth: data));
-        } else {
+        AuthResponse? data = await secureStorage.readAuth();
+        //Kiểm tra token có hết hạn hay không, token giới hạn thời gian là 3 giờ
+        if (data!.expiresIn! < DateTime.now().millisecondsSinceEpoch) {
+          await secureStorage.deleteSecureStorage();
           emit(LogOutAuthState());
+        } else {
+          emit(state.copyWith(auth: data));
         }
       } else {
         emit(LogOutAuthState());
@@ -66,8 +68,4 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(FailureAuthState(e.toString()));
     }
   }
-
-
 }
-
-

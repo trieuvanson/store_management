@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meta/meta.dart';
+import 'package:store_management/network/error_handling.dart';
 import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
 
 import '../../../../utils/date_utils.dart';
@@ -32,7 +33,7 @@ class CheckSheetCubit extends Cubit<CheckSheetState> {
           nextPage: pageIndex + 1,
           hasNext: checkSheets.totalRecord! < pageIndex * pageSize));
     } catch (e) {
-      emit(CheckSheetError(error: "Lỗi khi tải dữ liệu"));
+      emit(CheckSheetError(error: ErrorHandling.showMessage(e)));
     }
   }
 
@@ -62,7 +63,7 @@ class CheckSheetCubit extends Cubit<CheckSheetState> {
           msg: 'Đã lưu phiếu kiểm kho vào lúc $date',
           backgroundColor: Colors.green);
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Lỗi: $e');
+      Fluttertoast.showToast(msg: 'Lỗi: ${ErrorHandling.showMessage(e)}');
     }
   }
 
@@ -79,7 +80,7 @@ class CheckSheetCubit extends Cubit<CheckSheetState> {
         Fluttertoast.showToast(msg: 'Không thể xoá!\nKhông có phiếu kiểm kho');
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Lỗi: $e');
+      Fluttertoast.showToast(msg: 'Lỗi: ${ErrorHandling.showMessage(e)}', backgroundColor: Colors.red);
     }
   }
 

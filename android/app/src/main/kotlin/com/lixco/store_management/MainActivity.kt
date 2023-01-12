@@ -1,4 +1,4 @@
-package com.example.store_management
+package com.lixco.store_management
 
 import io.flutter.embedding.android.FlutterActivity
 

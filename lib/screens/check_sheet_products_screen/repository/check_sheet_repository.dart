@@ -44,7 +44,7 @@ class CheckSheetRepository extends AbstractRepository
       );
       return CheckSheetDtoResponse.fromJson(response.data!);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -69,7 +69,7 @@ class CheckSheetRepository extends AbstractRepository
           .toList();
       return returnList;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -111,7 +111,7 @@ class CheckSheetRepository extends AbstractRepository
 
       return response.data;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -143,7 +143,7 @@ class CheckSheetRepository extends AbstractRepository
 
       return response.data;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -158,7 +158,7 @@ class CheckSheetRepository extends AbstractRepository
         return response.data['msg'];
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
     return null;
   }

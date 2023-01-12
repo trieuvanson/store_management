@@ -15,9 +15,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Quản lý tồn kho</string>
+	<string>Tồn kho KiotLix</string>
 	<key>CFBundlePackageType</key>
-	<string>APPL</string>
+	<string>Tồn kho KiotLix</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>

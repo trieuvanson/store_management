@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/gestures.dart';
@@ -7,6 +9,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/check_expires/check_expires_cubit.dart';
 import 'package:store_management/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
 import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
 import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
@@ -14,6 +18,7 @@ import 'package:store_management/screens/check_sheet_products_screen/model/check
 import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
 import 'package:store_management/utils/date_utils.dart';
+import 'package:store_management/widgets/custom_alert_dialog.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -43,8 +48,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late ScrollController _scrollController;
   late ProductBloc _productBloc;
   late CheckSheetCubit _checkSheetCubit;
+  late CheckExpiresCubit _checkExpiresCubit;
   int _pageIndex = 1;
-  int _pageSize = 10;
+  int _pageSize = 50;
   bool _isShowCam = false;
   int indexFocus = -1;
   late String _date;
@@ -68,7 +74,19 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         date: _date,
       );
     _scrollController = ScrollController();
+    _showExpiresInit();
     super.initState();
+  }
+
+  _showExpiresInit() async {
+    SharedPreferences _pres = await SharedPreferences.getInstance();
+    int _expiresTime = _pres.getInt("expiresTime")?? 0;
+    if (_expiresTime < DateTime.now().day) {
+      Future.delayed(Duration.zero, () {
+        _bottomExpires();
+      });
+      _pres.setInt("expiresTime", DateTime.now().day);
+    }
   }
 
   _scrollToItem(int index, final data) {
@@ -174,7 +192,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
               products: state.products, branchId: widget.branchId, date: _date);
         }
       }
-        } catch (e) {}
+    } catch (e) {}
   }
 
   @override
@@ -241,8 +259,107 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     );
   }
 
-  toggle(date) {
-    String newDate = date;
+  void _bottomExpires() {
+    _checkExpiresCubit = BlocProvider.of<CheckExpiresCubit>(context);
+    _checkExpiresCubit.checkExpires(
+      branchId: widget.branchId,
+      pageIndex: _pageIndex,
+      pageSize: _pageSize,
+    );
+
+    Get.dialog(const Center(
+      child: CircularProgressIndicator(
+        color: Colors.white,
+      ),
+    ));
+
+    var _timer;
+    _timer = Timer(const Duration(seconds: 1), () {
+      Get.back();
+      if (_checkExpiresCubit.state is CheckExpiresLoaded) {
+        var state = _checkExpiresCubit.state as CheckExpiresLoaded;
+        if (state.checkExpires.isNotEmpty) {
+          var checkSheets = state.checkExpires;
+          showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return SizedBox(
+                child: Column(
+                  children: [
+                    10.heightBox,
+                    Text(
+                      "Danh sách sản phẩm sắp hết hạn",
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack, fontWeight: FontWeight.bold),
+                    ),
+                    10.heightBox,
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: checkSheets.length,
+                        itemBuilder: (context, index) {
+                          return _listProductExpires(
+                              product: checkSheets[index]);
+                        },
+                      ),
+                    ),
+                    10.heightBox,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Đóng"),
+                          ),
+                        ),
+                      ],
+                    ),
+                    10.heightBox,
+                  ],
+                ),
+              );
+            },
+            isDismissible: true,
+            clipBehavior: Clip.antiAlias,
+            elevation: 10,
+            enableDrag: true,
+            isScrollControlled: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            constraints: const BoxConstraints(
+              maxHeight: 600,
+            ),
+          );
+        } else {
+          Fluttertoast.showToast(
+            msg: 'Không có sản phẩm sắp hết hạn',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
+        _timer.cancel();
+        return;
+      } else if (_checkExpiresCubit.state is CheckExpiresError) {
+        var state = _checkExpiresCubit.state as CheckExpiresError;
+        Fluttertoast.showToast(
+          msg: state.error,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+        _timer.cancel();
+        return;
+      }
+    });
   }
 
   @override
@@ -265,32 +382,6 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                   branchId: widget.branchId,
                 ),
               );
-              // get show full screen dialog
-              // Get.dialog(
-              //   AlertDialog(
-              //     title: const Text('Tìm kiếm sản phẩm'),
-              //     content: SizedBox(
-              //       height: MediaQuery.of(context).size.height,
-              //       width: MediaQuery.of(context).size.width,
-              //       child: ListView.builder(
-              //         itemCount: 125,
-              //         itemBuilder: (context, index) {
-              //           return ListTile(
-              //             title: Text("Sản phẩm $index"),
-              //           );
-              //         },
-              //       ),
-              //     ),
-              //     alignment: Alignment.topLeft,
-              //     actions: [
-              //       TextButton(
-              //         onPressed: () => Navigator.pop(context),
-              //         child: const Text('Đóng'),
-              //       ),
-              //     ],
-              //   ),
-              //   barrierDismissible: false,
-              // );
             },
           ),
           IconButton(
@@ -341,6 +432,19 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     ],
                   ),
                 ),
+                //Expires
+                PopupMenuItem(
+                  value: 'EXPIRES',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.warning, color: kPrimaryColor),
+                      ),
+                      const Text('Sản phẩm sắp hết hạn'),
+                    ],
+                  ),
+                ),
                 PopupMenuItem(
                   value: 'GUIDE',
                   child: Row(
@@ -379,6 +483,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                   break;
                 case 'DELETE':
                   _deleteAllProducts();
+                  break;
+                case 'EXPIRES':
+                  _bottomExpires();
                   break;
               }
             },
@@ -792,7 +899,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${product.name} - ${index+1}",
+                      "${product.name}",
                       style: kTextAveHev14.copyWith(color: kColorBlack),
                     ),
                     const SizedBox(
@@ -910,6 +1017,143 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(
+                      height: kDefaultPadding / 4,
+                    ),
+                    //list to text, split ,
+                    Text(
+                      product.expires!.isNotEmpty
+                          ? "Hạn sử dụng: ${product.expires?.map((e) => e.date).join(', ')}"
+                          : '',
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _listProductExpires({required ProductDTO product, index}) {
+    _addAndGo() {
+      _productBloc.add(AddProductDTOEvent(product: product));
+      var _timer;
+      _timer = Timer(const Duration(milliseconds: 500), () {
+        int _index = _productBloc.getIndex(product.code!);
+        if (_productBloc.state is ProductLoaded && _index != -1) {
+          _timer.cancel();
+          Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
+            'product': product,
+            'index': _index,
+          });
+        }
+      });
+    }
+
+    Color color = indexFocus == index
+        ? Colors.red.withOpacity(0.2)
+        : Colors.grey.withOpacity(0.2);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
+      child: InkWell(
+        onTap: _addAndGo,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: color,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                child: Container(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                    child: Image.network(
+                      product.image ?? '',
+                      width: 80,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox(
+                          width: 80,
+                          height: 120,
+                          child: Center(
+                            child: Icon(Icons.image_not_supported),
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const SizedBox(
+                          width: 80,
+                          height: 120,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: kDefaultPadding / 2,
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${product.name}",
+                      style: kTextAveHev14.copyWith(color: kColorBlack),
+                    ),
+                    const SizedBox(
+                      height: kDefaultPadding / 4,
+                    ),
+                    Text(
+                      "Code: ${product.code ?? ''}",
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                    ),
+                    const SizedBox(
+                      height: kDefaultPadding / 4,
+                    ),
+                    Text(
+                      "Giá: ${convertToVND(product.price ?? 0)}",
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack, fontSize: 14),
+                    ),
+                    const SizedBox(
+                      height: kDefaultPadding / 4,
+                    ),
+                    Text(
+                      "Tồn kho: ${(product.inventory?.toInt()) ?? 0}",
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                    ),
+                    const SizedBox(
+                      height: kDefaultPadding / 4,
+                    ),
+                    Text(
+                      "Tồn thực tế: ${(product.inventoryCurrent.toInt())}",
+                      style: kTextAveHev14.copyWith(
+                          color: kColorBlack.withOpacity(0.6), fontSize: 14),
                     ),
                     const SizedBox(
                       height: kDefaultPadding / 4,
@@ -1075,13 +1319,13 @@ class TutorialOverlay extends ModalRoute<void> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(
+          const Text(
             'This is a nice overlay',
             style: TextStyle(color: Colors.white, fontSize: 30.0),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Dismiss'),
+            child: const Text('Dismiss'),
           )
         ],
       ),

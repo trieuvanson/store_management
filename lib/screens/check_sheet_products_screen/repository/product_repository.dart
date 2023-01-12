@@ -33,7 +33,7 @@ class ProductRepository extends AbstractRepository
         return Future.error(response.data['message']);
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -59,12 +59,11 @@ class ProductRepository extends AbstractRepository
       if (response.statusCode == 200) {
         var res = ProductResponse.fromJson(response.data);
         return res.data!;
-      } else {
-        return Future.error("Có lỗi xảy ra vui lòng thử lại");
       }
     } catch (e) {
       rethrow;
     }
+    return [];
   }
 
   //getOneBy
@@ -81,14 +80,9 @@ class ProductRepository extends AbstractRepository
       } else {
         return Future.error(response.data['message']);
       }
-    } on DioError catch (e) {
-      if (e.response!.statusCode == 400) {
-        rethrow;
-      }
     } catch (e) {
       rethrow;
     }
-    return Future.error('Không tìm thấy sản phẩm');
   }
 
   @override
@@ -102,33 +96,54 @@ class ProductRepository extends AbstractRepository
     throw UnimplementedError();
   }
 
-
-
-
-
   Future<ProductDTO> updateWithParams(
       {required ProductDTO storeDto, required int branchId}) async {
     try {
       final auth = await secureStorage.readAuth();
       final response = await put(
-        url: "$_finalUrl/id/${storeDto.id}",
-        token: auth!.accessToken,
-        branchId: branchId,
-        data: jsonEncode((storeDto.toJson()))
-      );
+          url: "$_finalUrl/id/${storeDto.id}",
+          token: auth!.accessToken,
+          branchId: branchId,
+          data: jsonEncode((storeDto.toJson())));
       if (response.statusCode == 200) {
         return ProductDTO.fromJson(response.data['data']);
-      } else {
-        return Future.error(response.data['message']);
-      }
-    } on DioError catch (e) {
-      if (e.response!.statusCode == 400) {
-        rethrow;
       }
     } catch (e) {
       rethrow;
     }
-    return Future.error('Không tìm thấy sản phẩm');
+    return Future.error('Có lỗi xảy ra, vui lòng thử lại');
+  }
+
+  Future<ProductResponse?> checkExpires({
+    required int branchId,
+    required pageSize,
+    required pageIndex,
+    int? expiryDate,
+  }) async {
+    try {
+      expiryDate ??= 15;
+
+
+
+      final auth = await secureStorage.readAuth();
+      final response = await get(
+        url: '$_finalUrl/expiryDateBelow',
+        token: auth!.accessToken,
+        queryParameters: {
+          'branchId': branchId,
+          'pageSize': pageSize,
+          'pageIndex': pageIndex,
+          'expiryDate': expiryDate,
+        },
+      );
+      if (response.statusCode == 200 && response.data['err'] == null) {
+        var res = ProductResponse.fromJson(response.data);
+        return res;
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

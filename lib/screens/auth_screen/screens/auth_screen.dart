@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/screens/auth_screen/core/auth_bloc.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -25,13 +26,22 @@ class _AuthScreenState extends State<AuthScreen> {
   late AuthBloc _authBloc;
   late TextEditingController _usernameController;
   late TextEditingController _passwordController;
+  SharedPreferences? _prefs;
 
   @override
   void initState() {
     super.initState();
-    _usernameController = TextEditingController();
+    _usernameController =
+        TextEditingController();
     _passwordController = TextEditingController();
+    _loadSharedPreferences();
     _authBloc = BlocProvider.of<AuthBloc>(context);
+  }
+
+  void _loadSharedPreferences() async {
+    _prefs = await SharedPreferences.getInstance();
+    _usernameController.text = _prefs!.getString('username') ?? '';
+    _passwordController.text = _prefs!.getString('password') ?? '';
   }
 
   changeLayout() {
@@ -42,6 +52,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   handleLogin() async {
     try {
+      _prefs?.setString('username', _usernameController.text);
+      _prefs?.setString('password', _passwordController.text);
+
       final isOnline = await connectionServices.isOnline;
       if (isOnline) {
         _authBloc.add(
@@ -57,7 +70,7 @@ class _AuthScreenState extends State<AuthScreen> {
             color: Colors.red);
       }
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 
@@ -123,30 +136,28 @@ class _AuthScreenState extends State<AuthScreen> {
         } else if (state is FailureAuthState) {
           Get.back();
           Get.snackbar(
-            "Thông báo",
-            "Đăng nhập thất bại.\nLý do: ${state.error}",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(10),
-            borderRadius: 10,
-            snackStyle: SnackStyle.FLOATING,
-            animationDuration: const Duration(milliseconds: 300),
-            duration: const Duration(seconds: 2),
-            icon: const Icon(
-              Icons.info,
-              color: Colors.white,
-            ),
-            mainButton: TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: const Icon(
-                Icons.close,
+              "Thông báo", "Đăng nhập thất bại.\nLý do: ${state.error}",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(10),
+              borderRadius: 10,
+              snackStyle: SnackStyle.FLOATING,
+              animationDuration: const Duration(milliseconds: 300),
+              duration: const Duration(seconds: 2),
+              icon: const Icon(
+                Icons.info,
                 color: Colors.white,
               ),
-            )
-          );
+              mainButton: TextButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                ),
+              ));
         } else if (state.auth != null) {
           Get.snackbar(
             "Thông báo",

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:store_management/network/error_handling.dart';
 
 import '../constants/env.dart' as env;
 import '../network/interceptor.dart';
@@ -37,8 +38,8 @@ abstract class AbstractRepository {
         ),
         queryParameters: queryParameters,
       );
-    } on DioError {
-      rethrow;
+    } on DioError catch (e) {
+      throw ErrorHandling(e.response);
     } catch (e) {
       rethrow;
     }
@@ -63,8 +64,8 @@ abstract class AbstractRepository {
           },
         ),
       );
-    } on DioError {
-      rethrow;
+    } on DioError catch (e) {
+      throw ErrorHandling(e.response);
     } catch (e) {
       rethrow;
     }
@@ -89,8 +90,8 @@ abstract class AbstractRepository {
           },
         ),
       );
-    } on DioError {
-      rethrow;
+    } on DioError catch (e) {
+      throw ErrorHandling(e.response);
     } catch (e) {
       rethrow;
     }
@@ -113,8 +114,8 @@ abstract class AbstractRepository {
           },
         ),
       );
-    } on DioError {
-      rethrow;
+    } on DioError catch (e) {
+      throw ErrorHandling(e.response);
     } catch (e) {
       rethrow;
     }

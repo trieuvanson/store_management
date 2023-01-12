@@ -17,16 +17,14 @@ class ErrorHandling {
   static String getErrorMessage(response) {
     try {
       if (response is Response) {
-        if(response.data!=null){
-          return ErrorRes.fromJson(response.data).error!;
-        }else {
+        {
           switch (response.statusCode) {
             case 200:
             case 201:
             case 202:
               return "Thành công";
             case 400:
-              return "Kiểm tra lại thông tin đăng nhập";
+              return "Vui lòng kiểm tra lại thông tin đăng nhập";
             case 401:
               return "Phiên đăng nhập đã hết hạn";
             case 404:
@@ -44,10 +42,18 @@ class ErrorHandling {
           }
         }
       } else {
-        return response.toString();
+        return "Có lỗi xảy ra, vui lòng thử lại sau";
       }
     } catch (e) {
-      return response.toString();
+      return "Có lỗi xảy ra, vui lòng thử lại sau";
+    }
+  }
+
+  static showMessage(e) {
+    if (e is ErrorHandling) {
+      return e.message;
+    } else {
+      return e.toString();
     }
   }
 

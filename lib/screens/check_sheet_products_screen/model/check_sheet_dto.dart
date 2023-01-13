@@ -1,4 +1,4 @@
-import 'package:store_management/utils/date_utils.dart';
+import '/utils/date_utils.dart';
 
 class CheckSheetDtoResponse {
   int? totalRecord;

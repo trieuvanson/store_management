@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:store_management/network/error_handling.dart';
+import '/network/error_handling.dart';
 
 import '../constants/env.dart' as env;
 import '../network/interceptor.dart';

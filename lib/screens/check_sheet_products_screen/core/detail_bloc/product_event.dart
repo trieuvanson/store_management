@@ -51,8 +51,9 @@ class EditProductEvent extends ProductEvent {
   final ProductDTO product;
   final int index;
   String? action;
+  bool showToast;
 
-  EditProductEvent({required this.product, required this.index, this.action});
+  EditProductEvent({required this.product, required this.index, this.action, this.showToast = true});
 }
 
 class UpdateProductEvent extends ProductEvent {

@@ -87,7 +87,7 @@ class ProductDTO {
       name: json['name'] ?? null,
       price: json['price'] ?? null,
       inventory: json['inventory'] ?? null,
-      inventoryCurrent: json['inventoryCurrent'] ?? null,
+      inventoryCurrent: json['inventoryCurrent'] ?? 0,
       image: json['image'] ?? '',
       expires: json['hanSuDungAPIs'] != null
           ? (json['hanSuDungAPIs'] as List)
@@ -96,6 +96,10 @@ class ProductDTO {
           : [],
     );
   }
+
+
+
+
 
   //toJson
   Map<String, dynamic> toJson() {

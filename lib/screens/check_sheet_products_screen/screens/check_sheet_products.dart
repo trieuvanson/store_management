@@ -1,27 +1,27 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart' as getit;
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/snackbar/snackbar.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/check_expires/check_expires_cubit.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
+import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
+import 'package:store_management/utils/date_utils.dart';
+import 'package:store_management/widgets/custom_alert_dialog.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:velocity_x/velocity_x.dart';
 
-import '/screens/check_sheet_products_screen/core/check_expires/check_expires_cubit.dart';
-import '/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
-import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';
-import '/screens/check_sheet_products_screen/core/search_products/search_products_cubit.dart';
-import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
-import '/screens/check_sheet_products_screen/model/product_dto.dart';
-import '/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
-import '/utils/date_utils.dart';
 import '../../../constants/contains.dart';
 import '../../../utils/utils.dart';
 import '../../screens.dart';
@@ -80,7 +80,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _showExpiresInit() async {
     SharedPreferences _pres = await SharedPreferences.getInstance();
-    int _expiresTime = /*_pres.getInt("expiresTime") ?? 0*/ 1;
+    int _expiresTime = _pres.getInt("expiresTime")?? 0;
     if (_expiresTime < DateTime.now().day) {
       Future.delayed(Duration.zero, () {
         _bottomExpires();
@@ -185,19 +185,11 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _beforeDispose() {
     try {
-      var currentDate =
-          dateUtils.getFormattedDateByCustom(DateTime.now(), "dd/MM/yyyy");
-      var selectDate = _date.substring(0, 10);
-
-      if (currentDate == selectDate) {
-        if (_productBloc.state is ProductLoaded) {
-          var state = _productBloc.state as ProductLoaded;
-          if (state.products.isNotEmpty) {
-            _checkSheetCubit.createWithBody(
-                products: state.products,
-                branchId: widget.branchId,
-                date: _date);
-          }
+      if (_productBloc.state is ProductLoaded) {
+        var state = _productBloc.state as ProductLoaded;
+        if (state.products.isNotEmpty) {
+          _checkSheetCubit.createWithBody(
+              products: state.products, branchId: widget.branchId, date: _date);
         }
       }
     } catch (e) {}
@@ -232,7 +224,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     _checkSheetCubit.delete(widget.branchId, _date);
     _productBloc.add(LoadProductsEvent(
       branchId: widget.branchId,
-      pageIndex: 1,
+      pageIndex: _pageIndex,
       pageSize: _pageSize,
     ));
   }
@@ -280,13 +272,6 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         color: Colors.white,
       ),
     ));
-
-
-    while (_checkExpiresCubit.state is! CheckExpiresLoaded) {
-
-    }
-
-
 
     var _timer;
     _timer = Timer(const Duration(seconds: 1), () {
@@ -384,7 +369,136 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: const Text(SCREEN_NAME, style: TextStyle(fontSize: 16)),
-        actions: _buildButtonAppBarAction(),
+        actions: [
+          //search
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CheckSheetSearchScreen(
+                  searchProdCubit:
+                      BlocProvider.of<SearchProductsCubit>(context),
+                  branchId: widget.branchId,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            onPressed: hideShowCamera,
+            icon: Icon(
+              _isShowCam ? Icons.close : Icons.camera_alt,
+              color: Colors.white,
+            ),
+            tooltip: _isShowCam ? "Ẩn camera" : "Hiện camera",
+          ),
+          PopupMenuButton<String>(
+            icon: const IconButton(
+              icon: Icon(Icons.more_vert, color: Colors.white),
+              onPressed: null,
+            ),
+            elevation: 3.2,
+            offset: const Offset(30, 50),
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem(
+                  enabled: _date.substring(0, 10) ==
+                      dateUtils.getFormattedDateByCustom(
+                          DateTime.now(), "dd/MM/yyyy"),
+                  value: 'SAVE',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.save, color: kPrimaryColor),
+                      ),
+                      const Text('Lưu dữ liệu'),
+                    ],
+                  ),
+                ),
+                //Xoá
+                PopupMenuItem(
+                  enabled: _date.substring(0, 10) ==
+                      dateUtils.getFormattedDateByCustom(
+                          DateTime.now(), "dd/MM/yyyy"),
+                  value: 'DELETE',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.delete, color: kPrimaryColor),
+                      ),
+                      const Text('Xoá dữ liệu'),
+                    ],
+                  ),
+                ),
+                //Expires
+                PopupMenuItem(
+                  value: 'EXPIRES',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.warning, color: kPrimaryColor),
+                      ),
+                      const Text('Sản phẩm sắp hết hạn'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'GUIDE',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.help, color: kPrimaryColor),
+                      ),
+                      const Text('Hướng dẫn'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'INFO',
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.info, color: kPrimaryColor),
+                      ),
+                      const Text('Thông tin'),
+                    ],
+                  ),
+                ),
+              ];
+            },
+            onSelected: (value) {
+              switch (value) {
+                case 'SAVE':
+                  _checkSheetCreate();
+                  break;
+                case 'GUIDE':
+                  _bottomGuide();
+                  break;
+                case 'INFO':
+                  break;
+                case 'DELETE':
+                  _deleteAllProducts();
+                  break;
+                case 'EXPIRES':
+                  _bottomExpires();
+                  break;
+              }
+            },
+          ),
+          //Làm mới
+          IconButton(
+            onPressed: () => {
+              _scaffoldKey.currentState!.openEndDrawer(),
+            },
+            icon: const Icon(Icons.menu_open),
+            tooltip: 'Danh sách phiếu kiếm',
+          ),
+        ],
       ),
       endDrawer: _endDrawer(),
       endDrawerEnableOpenDragGesture: true,
@@ -429,33 +543,23 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     if (state is ProductLoaded) {
                       return state.products.isEmpty
                           ? _noDataSection("Không có dữ liệu")
-                          : RefreshIndicator(
-                              onRefresh: () async {
-                                _productBloc.add(LoadProductsEvent(
-                                    branchId: widget.branchId,
-                                    pageSize: _pageSize,
-                                    pageIndex: 1));
-                              },
-                              semanticsValue: "Đang tải",
-                              triggerMode: RefreshIndicatorTriggerMode.anywhere,
-                              child: ListView.builder(
-                                  controller: _scrollController,
-                                  itemCount:
-                                      state.hasNext && state.isLoading != null
-                                          ? state.products.length + 1
-                                          : state.products.length,
-                                  addAutomaticKeepAlives: true,
-                                  shrinkWrap: true,
-                                  physics: const BouncingScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    if (index < state.products.length) {
-                                      return _listProducts(
-                                          product: state.products[index],
-                                          index: index);
-                                    }
-                                    return _loadingSection();
-                                  }),
-                            );
+                          : ListView.builder(
+                              controller: _scrollController,
+                              itemCount:
+                                  state.hasNext && state.isLoading != null
+                                      ? state.products.length + 1
+                                      : state.products.length,
+                              addAutomaticKeepAlives: true,
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                if (index < state.products.length) {
+                                  return _listProducts(
+                                      product: state.products[index],
+                                      index: index);
+                                }
+                                return _loadingSection();
+                              });
                     }
 
                     if (state is ProductError) {
@@ -726,7 +830,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   _listProducts({required ProductDTO product, index}) {
     Color color = indexFocus == index
         ? Colors.red.withOpacity(0.2)
-        : kPrimaryColor.withOpacity(0.05);
+        : Colors.grey.withOpacity(0.2);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
       child: InkWell(
@@ -739,9 +843,8 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
-          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
                 color: color,
@@ -865,15 +968,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                                         product.inventoryCurrent - 1,
                                     isCheck: true,
                                   ),
-                                  showToast: false,
                                   index: index,
                                 ),
                               );
                             }
                           },
                           child: Container(
-                            height: 24,
-                            width: 24,
+                            height: 15,
+                            width: 15,
                             decoration: BoxDecoration(
                               color: kColorRed,
                               borderRadius: BorderRadius.circular(5),
@@ -896,14 +998,13 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                                       product.inventoryCurrent + 1,
                                   isCheck: true,
                                 ),
-                                showToast: false,
                                 index: index,
                               ),
                             );
                           },
                           child: Container(
-                            height: 24,
-                            width: 24,
+                            height: 15,
+                            width: 15,
                             decoration: BoxDecoration(
                               color: kColorGreen,
                               borderRadius: BorderRadius.circular(5),
@@ -941,41 +1042,30 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   _listProductExpires({required ProductDTO product, index}) {
     _addAndGo() {
       _productBloc.add(AddProductDTOEvent(product: product));
-      Get.dialog(const Center(
-        child: CircularProgressIndicator(
-          color: Colors.white,
-        ),
-      ));
-      try {
-        var _timer;
-        _timer = Timer(const Duration(milliseconds: 500), () {
-          int _index = _productBloc.getIndex(product.code!);
-          if (_productBloc.state is ProductLoaded && _index != -1) {
-            Get.back();
-            _timer.cancel();
-            Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
-              'product': product,
-              'index': _index,
-            });
-          }
-        });
-      } catch (e) {
-        Get.snackbar('Lỗi', e.toString());
-      }
+      var _timer;
+      _timer = Timer(const Duration(milliseconds: 500), () {
+        int _index = _productBloc.getIndex(product.code!);
+        if (_productBloc.state is ProductLoaded && _index != -1) {
+          _timer.cancel();
+          Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
+            'product': product,
+            'index': _index,
+          });
+        }
+      });
     }
 
     Color color = indexFocus == index
         ? Colors.red.withOpacity(0.2)
-        : kPrimaryColor.withOpacity(0.05);
+        : Colors.grey.withOpacity(0.2);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
       child: InkWell(
         onTap: _addAndGo,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
-          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(kDefaultPadding),
+            borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
                 color: color,
@@ -1100,12 +1190,11 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
-          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(kDefaultPadding),
+            borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: kPrimaryColor.withOpacity(0.1),
+                color: kColorBlack.withOpacity(0.1),
               ),
             ],
           ),
@@ -1130,157 +1219,6 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _loadingSection() {
     return const Center(child: CircularProgressIndicator());
-  }
-
-  _buildButtonAppBarAction() {
-    return [
-      //search
-      IconButton(
-        icon: const Icon(Icons.search),
-        onPressed: () {
-          showSearch(
-            context: context,
-            delegate: CheckSheetSearchScreen(
-              searchProdCubit: BlocProvider.of<SearchProductsCubit>(context),
-              branchId: widget.branchId,
-            ),
-          );
-        },
-      ),
-      IconButton(
-        onPressed: hideShowCamera,
-        icon: Icon(
-          _isShowCam ? Icons.close : Icons.camera_alt,
-          color: Colors.white,
-        ),
-        tooltip: _isShowCam ? "Ẩn camera" : "Hiện camera",
-      ),
-      PopupMenuButton<String>(
-        icon: const IconButton(
-          icon: Icon(Icons.more_vert, color: Colors.white),
-          onPressed: null,
-        ),
-        elevation: 3.2,
-        offset: const Offset(30, 50),
-        itemBuilder: (BuildContext context) {
-          return [
-            PopupMenuItem(
-              enabled: _date.substring(0, 10) ==
-                  dateUtils.getFormattedDateByCustom(
-                      DateTime.now(), "dd/MM/yyyy"),
-              value: 'SAVE',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.save, color: kPrimaryColor),
-                  ),
-                  const Text('Lưu dữ liệu'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'LOAD',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.refresh_sharp, color: kPrimaryColor),
-                  ),
-                  const Text('Tải lại'),
-                ],
-              ),
-            ),
-            //Xoá
-            PopupMenuItem(
-              enabled: _date.substring(0, 10) ==
-                  dateUtils.getFormattedDateByCustom(
-                      DateTime.now(), "dd/MM/yyyy"),
-              value: 'DELETE',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.delete, color: kPrimaryColor),
-                  ),
-                  const Text('Xoá dữ liệu'),
-                ],
-              ),
-            ),
-            //Expires
-            PopupMenuItem(
-              value: 'EXPIRES',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.warning, color: kPrimaryColor),
-                  ),
-                  const Text('Sản phẩm sắp hết hạn'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'GUIDE',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.help, color: kPrimaryColor),
-                  ),
-                  const Text('Hướng dẫn'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'INFO',
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.info, color: kPrimaryColor),
-                  ),
-                  const Text('Thông tin'),
-                ],
-              ),
-            ),
-          ];
-        },
-        onSelected: (value) {
-          switch (value) {
-            case 'SAVE':
-              _checkSheetCreate();
-              break;
-            case 'LOAD':
-              _productBloc.add(LoadProductsEvent(
-                branchId: widget.branchId,
-                pageIndex: 1,
-                pageSize: _pageSize,
-              ));
-              break;
-            case 'GUIDE':
-              _bottomGuide();
-              break;
-            case 'INFO':
-              break;
-            case 'DELETE':
-              _deleteAllProducts();
-              break;
-            case 'EXPIRES':
-              _bottomExpires();
-              break;
-          }
-        },
-      ),
-      //Làm mới
-      IconButton(
-        onPressed: () => {
-          _scaffoldKey.currentState!.openEndDrawer(),
-        },
-        icon: const Icon(Icons.menu_open),
-        tooltip: 'Danh sách phiếu kiếm',
-      )
-    ];
   }
 }
 

@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:meta/meta.dart';
-import '/network/error_handling.dart';
-import '/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
-import '/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
-import '/utils/utils.dart';
+import 'package:store_management/network/error_handling.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/check_sheet_dto.dart';
+import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_products.dart';
+import 'package:store_management/utils/utils.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 import '../../../../utils/date_utils.dart';
@@ -53,8 +53,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
   _onLoad(LoadProductsEvent event, Emitter<ProductState> emit) async {
     try {
-      Get.dialog(const Center(child: CircularProgressIndicator()),
-          barrierDismissible: false);
+      print(state);
+
       CheckSheetDtoResponse isExistCheckSheet =
           (await checkSheetRepository.getAllBy(
               branchId: event.branchId!,
@@ -98,7 +98,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       Fluttertoast.showToast(
           msg: "Đã tải kiểm kho ngày ${event.date}",
           backgroundColor: Colors.green);
-      Get.back();
     } catch (e) {
       Fluttertoast.showToast(
           msg: "Lỗi tải kiểm kho ngày ${event.date}",
@@ -197,9 +196,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           List<ProductDTO> newProducts = List.from(currentState.products);
           //Xoá bỏ nếu như danh sách products mới có phần tử trùng với cũ
           for (var element in newProducts) {
-            // var item = products.firstWhere((item) => item.code == element
-            //     .code); //Nếu như có phần tử trùng thì xoá bỏ phần tử đó
-            // element.id ??= item.id;
             products.removeWhere((item) => element.code == item.code);
           }
           newProducts = [...newProducts, ...products];
@@ -248,15 +244,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         ),
       );
       if (event.action == null) {
-        if (event.showToast) {
-          Fluttertoast.cancel();
-          Fluttertoast.showToast(
-            msg:
-                "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}",
-            toastLength: Toast.LENGTH_SHORT,
-            backgroundColor: Colors.green,
-          );
-        }
+        Fluttertoast.showToast(
+          msg:
+              "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}",
+          toastLength: Toast.LENGTH_SHORT,
+          backgroundColor: Colors.green,
+        );
       } else {
         Get.back();
         Fluttertoast.showToast(msg: "Thành công!");
@@ -312,17 +305,20 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   int getIndex(String code) {
-    int index = -1;
     if (state is ProductLoaded) {
       ProductLoaded currentState = state as ProductLoaded;
       for (var i = 0; i < currentState.products.length; i++) {
         if (currentState.products[i].code == code) {
-          return index = i;
+          return i;
         }
       }
     }
-    return index;
+    return -1;
   }
+
+
+
+  get index => getIndex;
 
   String _fileName(int branchId, {String? date}) {
     date ??= dateUtils.getFormattedDateByCustom(DateTime.now(), "dd_MM_yyyy");

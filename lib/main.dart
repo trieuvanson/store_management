@@ -7,7 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/screens/check_sheet_products_screen/core/check_expires/check_expires_cubit.dart';
+import 'package:store_management/screens/check_sheet_products_screen/core/check_expires/check_expires_cubit.dart';
 import '/screens/auth_screen/repository/auth_repostory.dart';
 import '/screens/check_sheet_products_screen/core/check_sheet/check_sheet_cubit.dart';
 import '/screens/check_sheet_products_screen/core/detail_bloc/product_bloc.dart';

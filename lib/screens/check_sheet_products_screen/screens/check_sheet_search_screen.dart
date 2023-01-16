@@ -118,157 +118,154 @@ class CheckSheetSearchScreen extends SearchDelegate<dynamic> {
   }
 
   _listProducts(BuildContext context, {required ProductDTO product, index}) {
-    Color color = kPrimaryColor.withOpacity(0.05);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding/2),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.add_box_sharp, color: kPrimaryColor),
-            onPressed: () {
-              BlocProvider.of<ProductBloc>(context)
-                  .add(AddProductDTOEvent(product: product));
-            },
-          ),
+    Color color = Colors.grey.withOpacity(0.2);
+    return InputDecorator(
+      decoration: InputDecoration(
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.add_box_sharp),
+          onPressed: () {
+            BlocProvider.of<ProductBloc>(context)
+                .add(AddProductDTOEvent(product: product));
+          },
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
-          child: InkWell(
-            onTap: () {
-              //CheckSheetDetailScreen(product: product, index: index)
-              Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
-                'product': product,
-                'index': index,
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(kDefaultPadding),
-                boxShadow: [
-                  BoxShadow(
-                    color: color,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    child: Container(
-                      color: Colors.transparent,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: kDefaultPadding),
-                        child: Image.network(
-                          product.image ?? '',
-                          width: 80,
-                          height: 120,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const SizedBox(
-                              width: 80,
-                              height: 120,
-                              child: Center(
-                                child: Icon(Icons.image_not_supported),
-                              ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const SizedBox(
-                              width: 80,
-                              height: 120,
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          },
-                        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
+        child: InkWell(
+          onTap: () {
+            //CheckSheetDetailScreen(product: product, index: index)
+            Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
+              'product': product,
+              'index': index,
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: color,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: kDefaultPadding),
+                      child: Image.network(
+                        product.image ?? '',
+                        width: 80,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(
+                            width: 80,
+                            height: 120,
+                            child: Center(
+                              child: Icon(Icons.image_not_supported),
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const SizedBox(
+                            width: 80,
+                            height: 120,
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    width: kDefaultPadding / 2,
+                ),
+                const SizedBox(
+                  width: kDefaultPadding / 2,
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${product.name}",
+                        style: kTextAveHev14.copyWith(color: kColorBlack),
+                      ),
+                      const SizedBox(
+                        height: kDefaultPadding / 4,
+                      ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.start,
+                      //   crossAxisAlignment: CrossAxisAlignment.center,
+                      //   children: [
+                      //     Container(
+                      //       height:8,
+                      //       width: 8,
+                      //       decoration: BoxDecoration(
+                      //           color: character.status=="Alive"?kColorGreen:kColorRed,
+                      //           shape: BoxShape.circle
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: kDefaultPadding/4,),
+                      //     Text(character.status!,style: kTextAveHev14.copyWith(
+                      //         color: kColorBlack,
+                      //         fontSize: 14
+                      //     ),),
+                      //   ],
+                      // ),
+                      Text(
+                        "Code: ${product.code ?? ''}",
+                        style: kTextAveHev14.copyWith(
+                            color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                      ),
+                      const SizedBox(
+                        height: kDefaultPadding / 4,
+                      ),
+                      Text(
+                        "Giá: ${convertToVND(product.price ?? 0)}",
+                        style: kTextAveHev14.copyWith(
+                            color: kColorBlack, fontSize: 14),
+                      ),
+                      const SizedBox(
+                        height: kDefaultPadding / 4,
+                      ),
+                      Text(
+                        "Tồn kho: ${(product.inventory?.toInt()) ?? 0}",
+                        style: kTextAveHev14.copyWith(
+                            color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                      ),
+                      const SizedBox(
+                        height: kDefaultPadding / 4,
+                      ),
+                      Text(
+                        "Tồn thực tế: ${(product.inventoryCurrent.toInt())}",
+                        style: kTextAveHev14.copyWith(
+                            color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                      ),
+                      const SizedBox(
+                        height: kDefaultPadding / 4,
+                      ),
+                      //list to text, split ,
+                      Text(
+                        product.expires!.isNotEmpty
+                            ? "Hạn sử dụng: ${product.expires?.map((e) => e.date).join(', ')}"
+                            : '',
+                        style: kTextAveHev14.copyWith(
+                            color: kColorBlack.withOpacity(0.6), fontSize: 14),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${product.name}",
-                          style: kTextAveHev14.copyWith(color: kColorBlack),
-                        ),
-                        const SizedBox(
-                          height: kDefaultPadding / 4,
-                        ),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.start,
-                        //   crossAxisAlignment: CrossAxisAlignment.center,
-                        //   children: [
-                        //     Container(
-                        //       height:8,
-                        //       width: 8,
-                        //       decoration: BoxDecoration(
-                        //           color: character.status=="Alive"?kColorGreen:kColorRed,
-                        //           shape: BoxShape.circle
-                        //       ),
-                        //     ),
-                        //     const SizedBox(width: kDefaultPadding/4,),
-                        //     Text(character.status!,style: kTextAveHev14.copyWith(
-                        //         color: kColorBlack,
-                        //         fontSize: 14
-                        //     ),),
-                        //   ],
-                        // ),
-                        Text(
-                          "Code: ${product.code ?? ''}",
-                          style: kTextAveHev14.copyWith(
-                              color: kColorBlack.withOpacity(0.6), fontSize: 14),
-                        ),
-                        const SizedBox(
-                          height: kDefaultPadding / 4,
-                        ),
-                        Text(
-                          "Giá: ${convertToVND(product.price ?? 0)}",
-                          style: kTextAveHev14.copyWith(
-                              color: kColorBlack, fontSize: 14),
-                        ),
-                        const SizedBox(
-                          height: kDefaultPadding / 4,
-                        ),
-                        Text(
-                          "Tồn kho: ${(product.inventory?.toInt()) ?? 0}",
-                          style: kTextAveHev14.copyWith(
-                              color: kColorBlack.withOpacity(0.6), fontSize: 14),
-                        ),
-                        const SizedBox(
-                          height: kDefaultPadding / 4,
-                        ),
-                        Text(
-                          "Tồn thực tế: ${(product.inventoryCurrent.toInt())}",
-                          style: kTextAveHev14.copyWith(
-                              color: kColorBlack.withOpacity(0.6), fontSize: 14),
-                        ),
-                        const SizedBox(
-                          height: kDefaultPadding / 4,
-                        ),
-                        //list to text, split ,
-                        Text(
-                          product.expires!.isNotEmpty
-                              ? "Hạn sử dụng: ${product.expires?.map((e) => e.date).join(', ')}"
-                              : '',
-                          style: kTextAveHev14.copyWith(
-                              color: kColorBlack.withOpacity(0.6), fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
           ),
         ),

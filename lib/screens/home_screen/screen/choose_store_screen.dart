@@ -35,6 +35,16 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
         "createdDate": "2016-09-19T11:03:17.9200000"
       },
       {
+        "id": 392899,
+        "branchName": "KHO BẾP BÁNH",
+        "address": "141",
+        "locationName": "Kiên Giang - Huyện Phú Quốc",
+        "wardName": "Thị trấn Dương Đông",
+        "contactNumber": "0915794238",
+        "retailerId": 107783,
+        "createdDate": "2022-01-19T12:53:10.0130000"
+      },
+      {
         "id": 80204,
         "branchName": "KHO TỔNG",
         "address": "141a Trần Hưng Đạo",

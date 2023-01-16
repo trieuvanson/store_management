@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import '/network/error_handling.dart';
-import '/screens/check_sheet_products_screen/model/product_dto.dart';
+import 'package:store_management/network/error_handling.dart';
+import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
 
 import '../../repository/product_repository.dart';
 

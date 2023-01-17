@@ -17,6 +17,13 @@ class SearchProductsCubit extends Cubit<SearchProductsState> {
   Future<void> searchProduct(
       {String? query, int? branchId, int? pageIndex, int? pageSize}) async {
     try {
+      if (query == null || query.isEmpty) {
+        emit(ProductLoadedSearch(
+            products: [],
+            hasNext: false,
+            nextPage: pageIndex! + 1));
+        return;
+      }
       var products = await productRepository.search(query,
           branchId: branchId, pageIndex: pageIndex, pageSize: pageSize);
       if (products != null && products.isNotEmpty) {

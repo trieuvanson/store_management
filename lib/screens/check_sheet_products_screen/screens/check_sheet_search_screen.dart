@@ -24,10 +24,6 @@ class CheckSheetSearchScreen extends SearchDelegate<dynamic> {
   @override
   void showResultsNotUnFocus(BuildContext context) {
     var searchQuery = query;
-    // if (query.isEmpty) {
-    //   searchQuery = ' ';
-    // }
-
     _debounce.run(() {
       searchProdCubit.searchProduct(
           query: searchQuery, branchId: branchId, pageIndex: 1, pageSize: 50);

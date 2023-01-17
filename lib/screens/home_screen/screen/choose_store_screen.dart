@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:store_management/screens/auth_screen/core/auth_bloc.dart';
 import '/screens/home_screen/repository/store_dto_repository.dart';
 
 import '../../../constants/contains.dart';
@@ -33,16 +36,6 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
         "retailerId": 107783,
         "modifiedDate": "2018-10-25T15:17:08.0130000",
         "createdDate": "2016-09-19T11:03:17.9200000"
-      },
-      {
-        "id": 392899,
-        "branchName": "KHO BẾP BÁNH",
-        "address": "141",
-        "locationName": "Kiên Giang - Huyện Phú Quốc",
-        "wardName": "Thị trấn Dương Đông",
-        "contactNumber": "0915794238",
-        "retailerId": 107783,
-        "createdDate": "2022-01-19T12:53:10.0130000"
       },
       {
         "id": 80204,
@@ -127,9 +120,6 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
 
   _handleLogout() {
     _logoutStatus = '';
-    // GetSnackBar(
-    //   ).show();
-
     Get.snackbar(
       'Thông báo',
       'Đang đăng xuất',
@@ -158,6 +148,7 @@ class _ChooseStoreScreenState extends State<ChooseStoreScreen> {
       progressIndicatorBackgroundColor: Colors.white,
       snackbarStatus: (status) {
         if (status == SnackbarStatus.CLOSED && _logoutStatus != 'CANCEL') {
+          BlocProvider.of<AuthBloc>(context).add(LogOutEvent());
           Get.offAllNamed(AuthScreen.routeName);
         }
       },

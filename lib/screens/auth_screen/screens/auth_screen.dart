@@ -195,8 +195,12 @@ class _AuthScreenState extends State<AuthScreen> {
         body: WillPopScope(
           onWillPop: () => handleWillPop(),
           child: SingleChildScrollView(
+
             child: Container(
               height: context.screenHeight,
+              constraints: const BoxConstraints(
+                minHeight: 600,
+              ),
               decoration: const BoxDecoration(
                 //shadow light
                 gradient: LinearGradient(

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +18,6 @@ import 'package:store_management/screens/check_sheet_products_screen/model/check
 import 'package:store_management/screens/check_sheet_products_screen/model/product_dto.dart';
 import 'package:store_management/screens/check_sheet_products_screen/screens/check_sheet_search_screen.dart';
 import 'package:store_management/utils/date_utils.dart';
-import 'package:store_management/widgets/custom_alert_dialog.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -41,7 +40,7 @@ class CheckSheetProductsScreen extends StatefulWidget {
 
 class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late Barcode result;
-  QRViewController? _qrViewController = null;
+  QRViewController? _qrViewController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -50,7 +49,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late CheckSheetCubit _checkSheetCubit;
   late CheckExpiresCubit _checkExpiresCubit;
   int _pageIndex = 1;
-  int _pageSize = 50;
+  final int _pageSize = 50;
   bool _isShowCam = false;
   int indexFocus = -1;
   late String _date;
@@ -79,13 +78,13 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   }
 
   _showExpiresInit() async {
-    SharedPreferences _pres = await SharedPreferences.getInstance();
-    int _expiresTime = _pres.getInt("expiresTime")?? 0;
-    if (_expiresTime < DateTime.now().day) {
+    SharedPreferences pres = await SharedPreferences.getInstance();
+    int expiresTime = pres.getInt("${widget.branchId}expiresTime") ?? 0;
+    if (expiresTime < DateTime.now().day) {
       Future.delayed(Duration.zero, () {
         _bottomExpires();
       });
-      _pres.setInt("expiresTime", DateTime.now().day);
+      pres.setInt("${widget.branchId}expiresTime", DateTime.now().day);
     }
   }
 
@@ -105,7 +104,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         curve: Curves.easeInOut,
       );
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -185,11 +186,19 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _beforeDispose() {
     try {
-      if (_productBloc.state is ProductLoaded) {
-        var state = _productBloc.state as ProductLoaded;
-        if (state.products.isNotEmpty) {
-          _checkSheetCubit.createWithBody(
-              products: state.products, branchId: widget.branchId, date: _date);
+      var currentDate =
+          dateUtils.getFormattedDateByCustom(DateTime.now(), "dd/MM/yyyy");
+      var selectDate = _date.substring(0, 10);
+
+      if (currentDate == selectDate) {
+        if (_productBloc.state is ProductLoaded) {
+          var state = _productBloc.state as ProductLoaded;
+          if (state.products.isNotEmpty) {
+            _checkSheetCubit.createWithBody(
+                products: state.products,
+                branchId: widget.branchId,
+                date: _date);
+          }
         }
       }
     } catch (e) {}
@@ -224,7 +233,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     _checkSheetCubit.delete(widget.branchId, _date);
     _productBloc.add(LoadProductsEvent(
       branchId: widget.branchId,
-      pageIndex: _pageIndex,
+      pageIndex: 1,
       pageSize: _pageSize,
     ));
   }
@@ -267,11 +276,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
       pageSize: _pageSize,
     );
 
-    Get.dialog(const Center(
-      child: CircularProgressIndicator(
-        color: Colors.white,
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
       ),
-    ));
+      barrierDismissible: false,
+    );
 
     var _timer;
     _timer = Timer(const Duration(seconds: 1), () {
@@ -369,136 +381,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: const Text(SCREEN_NAME, style: TextStyle(fontSize: 16)),
-        actions: [
-          //search
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: CheckSheetSearchScreen(
-                  searchProdCubit:
-                      BlocProvider.of<SearchProductsCubit>(context),
-                  branchId: widget.branchId,
-                ),
-              );
-            },
-          ),
-          IconButton(
-            onPressed: hideShowCamera,
-            icon: Icon(
-              _isShowCam ? Icons.close : Icons.camera_alt,
-              color: Colors.white,
-            ),
-            tooltip: _isShowCam ? "Ẩn camera" : "Hiện camera",
-          ),
-          PopupMenuButton<String>(
-            icon: const IconButton(
-              icon: Icon(Icons.more_vert, color: Colors.white),
-              onPressed: null,
-            ),
-            elevation: 3.2,
-            offset: const Offset(30, 50),
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  enabled: _date.substring(0, 10) ==
-                      dateUtils.getFormattedDateByCustom(
-                          DateTime.now(), "dd/MM/yyyy"),
-                  value: 'SAVE',
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.save, color: kPrimaryColor),
-                      ),
-                      const Text('Lưu dữ liệu'),
-                    ],
-                  ),
-                ),
-                //Xoá
-                PopupMenuItem(
-                  enabled: _date.substring(0, 10) ==
-                      dateUtils.getFormattedDateByCustom(
-                          DateTime.now(), "dd/MM/yyyy"),
-                  value: 'DELETE',
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.delete, color: kPrimaryColor),
-                      ),
-                      const Text('Xoá dữ liệu'),
-                    ],
-                  ),
-                ),
-                //Expires
-                PopupMenuItem(
-                  value: 'EXPIRES',
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.warning, color: kPrimaryColor),
-                      ),
-                      const Text('Sản phẩm sắp hết hạn'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'GUIDE',
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.help, color: kPrimaryColor),
-                      ),
-                      const Text('Hướng dẫn'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'INFO',
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.info, color: kPrimaryColor),
-                      ),
-                      const Text('Thông tin'),
-                    ],
-                  ),
-                ),
-              ];
-            },
-            onSelected: (value) {
-              switch (value) {
-                case 'SAVE':
-                  _checkSheetCreate();
-                  break;
-                case 'GUIDE':
-                  _bottomGuide();
-                  break;
-                case 'INFO':
-                  break;
-                case 'DELETE':
-                  _deleteAllProducts();
-                  break;
-                case 'EXPIRES':
-                  _bottomExpires();
-                  break;
-              }
-            },
-          ),
-          //Làm mới
-          IconButton(
-            onPressed: () => {
-              _scaffoldKey.currentState!.openEndDrawer(),
-            },
-            icon: const Icon(Icons.menu_open),
-            tooltip: 'Danh sách phiếu kiếm',
-          ),
-        ],
+        actions: _buildButtonAppBarAction(),
       ),
       endDrawer: _endDrawer(),
       endDrawerEnableOpenDragGesture: true,
@@ -543,23 +426,33 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                     if (state is ProductLoaded) {
                       return state.products.isEmpty
                           ? _noDataSection("Không có dữ liệu")
-                          : ListView.builder(
-                              controller: _scrollController,
-                              itemCount:
-                                  state.hasNext && state.isLoading != null
-                                      ? state.products.length + 1
-                                      : state.products.length,
-                              addAutomaticKeepAlives: true,
-                              shrinkWrap: true,
-                              physics: const BouncingScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                if (index < state.products.length) {
-                                  return _listProducts(
-                                      product: state.products[index],
-                                      index: index);
-                                }
-                                return _loadingSection();
-                              });
+                          : RefreshIndicator(
+                              onRefresh: () async {
+                                _productBloc.add(LoadProductsEvent(
+                                    branchId: widget.branchId,
+                                    pageSize: _pageSize,
+                                    pageIndex: 1));
+                              },
+                              semanticsValue: "Đang tải",
+                              triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                              child: ListView.builder(
+                                  controller: _scrollController,
+                                  itemCount:
+                                      state.hasNext && state.isLoading != null
+                                          ? state.products.length + 1
+                                          : state.products.length,
+                                  addAutomaticKeepAlives: true,
+                                  shrinkWrap: true,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    if (index < state.products.length) {
+                                      return _listProducts(
+                                          product: state.products[index],
+                                          index: index);
+                                    }
+                                    return _loadingSection();
+                                  }),
+                            );
                     }
 
                     if (state is ProductError) {
@@ -830,7 +723,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   _listProducts({required ProductDTO product, index}) {
     Color color = indexFocus == index
         ? Colors.red.withOpacity(0.2)
-        : Colors.grey.withOpacity(0.2);
+        : kPrimaryColor.withOpacity(0.1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
       child: InkWell(
@@ -843,8 +736,9 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: color,
@@ -968,14 +862,15 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                                         product.inventoryCurrent - 1,
                                     isCheck: true,
                                   ),
+                                  showToast: false,
                                   index: index,
                                 ),
                               );
                             }
                           },
                           child: Container(
-                            height: 15,
-                            width: 15,
+                            height: 24,
+                            width: 24,
                             decoration: BoxDecoration(
                               color: kColorRed,
                               borderRadius: BorderRadius.circular(5),
@@ -998,13 +893,14 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
                                       product.inventoryCurrent + 1,
                                   isCheck: true,
                                 ),
+                                showToast: false,
                                 index: index,
                               ),
                             );
                           },
                           child: Container(
-                            height: 15,
-                            width: 15,
+                            height: 24,
+                            width: 24,
                             decoration: BoxDecoration(
                               color: kColorGreen,
                               borderRadius: BorderRadius.circular(5),
@@ -1042,30 +938,41 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   _listProductExpires({required ProductDTO product, index}) {
     _addAndGo() {
       _productBloc.add(AddProductDTOEvent(product: product));
-      var _timer;
-      _timer = Timer(const Duration(milliseconds: 500), () {
-        int _index = _productBloc.getIndex(product.code!);
-        if (_productBloc.state is ProductLoaded && _index != -1) {
-          _timer.cancel();
-          Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
-            'product': product,
-            'index': _index,
-          });
-        }
-      });
+      Get.dialog(const Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
+      ));
+      try {
+        var _timer;
+        _timer = Timer(const Duration(milliseconds: 500), () {
+          int _index = _productBloc.getIndex(product.code!);
+          if (_productBloc.state is ProductLoaded && _index != -1) {
+            Get.back();
+            _timer.cancel();
+            Get.toNamed(CheckSheetDetailScreen.routeName, arguments: {
+              'product': product,
+              'index': _index,
+            });
+          }
+        });
+      } catch (e) {
+        Get.snackbar('Lỗi', e.toString());
+      }
     }
 
     Color color = indexFocus == index
         ? Colors.red.withOpacity(0.2)
-        : Colors.grey.withOpacity(0.2);
+        : kPrimaryColor.withOpacity(0.1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
       child: InkWell(
         onTap: _addAndGo,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(kDefaultPadding),
             boxShadow: [
               BoxShadow(
                 color: color,
@@ -1190,11 +1097,12 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
+          margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(kDefaultPadding),
             boxShadow: [
               BoxShadow(
-                color: kColorBlack.withOpacity(0.1),
+                color: kPrimaryColor.withOpacity(0.1),
               ),
             ],
           ),
@@ -1219,6 +1127,157 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
 
   _loadingSection() {
     return const Center(child: CircularProgressIndicator());
+  }
+
+  _buildButtonAppBarAction() {
+    return [
+      //search
+      IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: () {
+          showSearch(
+            context: context,
+            delegate: CheckSheetSearchScreen(
+              searchProdCubit: BlocProvider.of<SearchProductsCubit>(context),
+              branchId: widget.branchId,
+            ),
+          );
+        },
+      ),
+      IconButton(
+        onPressed: hideShowCamera,
+        icon: Icon(
+          _isShowCam ? Icons.close : Icons.camera_alt,
+          color: Colors.white,
+        ),
+        tooltip: _isShowCam ? "Ẩn camera" : "Hiện camera",
+      ),
+      PopupMenuButton<String>(
+        icon: const IconButton(
+          icon: Icon(Icons.more_vert, color: Colors.white),
+          onPressed: null,
+        ),
+        elevation: 3.2,
+        offset: const Offset(30, 50),
+        itemBuilder: (BuildContext context) {
+          return [
+            PopupMenuItem(
+              enabled: _date.substring(0, 10) ==
+                  dateUtils.getFormattedDateByCustom(
+                      DateTime.now(), "dd/MM/yyyy"),
+              value: 'SAVE',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.save, color: kPrimaryColor),
+                  ),
+                  const Text('Lưu dữ liệu'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'LOAD',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.refresh_sharp, color: kPrimaryColor),
+                  ),
+                  const Text('Tải lại'),
+                ],
+              ),
+            ),
+            //Xoá
+            PopupMenuItem(
+              enabled: _date.substring(0, 10) ==
+                  dateUtils.getFormattedDateByCustom(
+                      DateTime.now(), "dd/MM/yyyy"),
+              value: 'DELETE',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.delete, color: kPrimaryColor),
+                  ),
+                  const Text('Xoá dữ liệu'),
+                ],
+              ),
+            ),
+            //Expires
+            PopupMenuItem(
+              value: 'EXPIRES',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.warning, color: kPrimaryColor),
+                  ),
+                  const Text('Sản phẩm sắp hết hạn'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'GUIDE',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.help, color: kPrimaryColor),
+                  ),
+                  const Text('Hướng dẫn'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'INFO',
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.info, color: kPrimaryColor),
+                  ),
+                  const Text('Thông tin'),
+                ],
+              ),
+            ),
+          ];
+        },
+        onSelected: (value) {
+          switch (value) {
+            case 'SAVE':
+              _checkSheetCreate();
+              break;
+            case 'LOAD':
+              _productBloc.add(LoadProductsEvent(
+                branchId: widget.branchId,
+                pageIndex: 1,
+                pageSize: _pageSize,
+              ));
+              break;
+            case 'GUIDE':
+              _bottomGuide();
+              break;
+            case 'INFO':
+              break;
+            case 'DELETE':
+              _deleteAllProducts();
+              break;
+            case 'EXPIRES':
+              _bottomExpires();
+              break;
+          }
+        },
+      ),
+      //Làm mới
+      IconButton(
+        onPressed: () => {
+          _scaffoldKey.currentState!.openEndDrawer(),
+        },
+        icon: const Icon(Icons.menu_open),
+        tooltip: 'Danh sách phiếu kiếm',
+      )
+    ];
   }
 }
 
@@ -1278,70 +1337,3 @@ const _listFormats = [
   /// UPC/EAN extension format. Not a stand-alone format.
   BarcodeFormat.upcEanExtension,
 ];
-
-class TutorialOverlay extends ModalRoute<void> {
-  @override
-  Duration get transitionDuration => const Duration(milliseconds: 500);
-
-  @override
-  bool get opaque => false;
-
-  @override
-  bool get barrierDismissible => false;
-
-  @override
-  Color get barrierColor => Colors.black.withOpacity(0.5);
-
-  @override
-  String? get barrierLabel => null;
-
-  @override
-  bool get maintainState => true;
-
-  @override
-  Widget buildPage(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
-    // This makes sure that text and other content follows the material style
-    return Material(
-      type: MaterialType.transparency,
-      // make sure that the overlay content is not cut off
-      child: SafeArea(
-        child: _buildOverlayContent(context),
-      ),
-    );
-  }
-
-  Widget _buildOverlayContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const Text(
-            'This is a nice overlay',
-            style: TextStyle(color: Colors.white, fontSize: 30.0),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Dismiss'),
-          )
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    // You can add your own animations for the overlay content
-    return FadeTransition(
-      opacity: animation,
-      child: ScaleTransition(
-        scale: animation,
-        child: child,
-      ),
-    );
-  }
-}

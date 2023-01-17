@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/screens/auth_screen/model/auth_response.dart';
 
 import '../../../utils/secure_storage.dart';
@@ -61,9 +62,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogOut(LogOutEvent event, Emitter<AuthState> emit) async {
     try {
-      // emit(const LoadingAuthState());
-      // await secureStorage.deleteSecureStorage();
-      // emit(const LogOutAuthState());
+      SharedPreferences _prefs = await SharedPreferences.getInstance();
+      String username = _prefs.getString('username') ?? '';
+      String password = _prefs.getString('password') ?? '';
+      await secureStorage.deleteSecureStorage();
+      await _prefs.clear();
+      await _prefs.setString("username", username);
+      await _prefs.setString("password", password);
+      emit(LogOutAuthState());
     } catch (e) {
       emit(FailureAuthState(e.toString()));
     }

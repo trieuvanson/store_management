@@ -244,12 +244,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         ),
       );
       if (event.action == null) {
-        Fluttertoast.showToast(
-          msg:
-              "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}",
-          toastLength: Toast.LENGTH_SHORT,
-          backgroundColor: Colors.green,
-        );
+        if (event.showToast) {
+          Fluttertoast.cancel();
+          //close toast and show new toast
+          Fluttertoast.showToast(
+            msg:
+                "${event.product.name}\nSố lượng: ${event.product.inventoryCurrent.toInt()}",
+            toastLength: Toast.LENGTH_SHORT,
+            backgroundColor: Colors.green,
+          );
+        }
       } else {
         Get.back();
         Fluttertoast.showToast(msg: "Thành công!");
@@ -315,8 +319,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     }
     return -1;
   }
-
-
 
   get index => getIndex;
 

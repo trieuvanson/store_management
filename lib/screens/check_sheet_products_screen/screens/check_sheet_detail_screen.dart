@@ -68,9 +68,9 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
       image: _imageUrl,
       expires: _expires,
     );
-    _productBloc.add(EditProductEvent(product: product, index: widget.index, action: "DETAIL"));
+    _productBloc.add(EditProductEvent(
+        product: product, index: widget.index, action: "DETAIL"));
   }
-
 
   // _dispose() {
   //   _expires = List.from(_expiresTemp);
@@ -136,7 +136,11 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
                     errorBuilder: (context, error, stackTrace) {
                       return const SizedBox(
                         child: Center(
-                          child: Icon(Icons.image_not_supported),
+                          child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Icon(Icons.image_not_supported),
+                          ),
                         ),
                       );
                     },
@@ -312,7 +316,8 @@ class _CheckSheetDetailScreenState extends State<CheckSheetDetailScreen> {
                     20.heightBox,
                     TextFormField(
                         keyboardType: TextInputType.number,
-                        initialValue: _expires[index].quantity!.toInt().toString(),
+                        initialValue:
+                            _expires[index].quantity!.toInt().toString(),
                         decoration: const InputDecoration(
                           labelText: 'Số lượng',
                           border: OutlineInputBorder(),

@@ -28,7 +28,7 @@ class LoggingInterceptor extends Interceptor {
       'RESPONSE QUERY':response.requestOptions.queryParameters,
       'RESPONSE HEADER:': response.requestOptions.headers,
       'RESPONSE METHOD:': response.requestOptions.method,
-      'RESPONSE BODY': response.data,
+      // 'RESPONSE BODY': response.data,
       "RESPONSE STATUS CODE  ":response.statusCode,
       "RESPONSE STATUS MESSAGE":response.statusMessage
     };

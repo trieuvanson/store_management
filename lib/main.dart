@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:connectivity/connectivity.dart';
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -26,13 +28,40 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+
+  //rotate the screen
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+
+
+
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint(e.toString());
   }
   setPathUrlStrategy();
+  // runApp(
+  //   DevicePreview(
+  //     enabled: !kReleaseMode,
+  //     builder: (context) => const StoreManagementApp(), // Wrap your app
+  //   ),
+  // );
   runApp(const StoreManagementApp());
+  // runApp(
+  //   DevicePreview(
+  //     enabled: !kReleaseMode,
+  //     // tools: const [
+  //     //   ...DevicePreview.defaultTools,
+  //     // ],
+  //     child: const StoreManagementApp(),
+  //   ),
+  // );
 }
 
 class StoreManagementApp extends StatefulWidget {

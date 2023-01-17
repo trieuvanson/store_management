@@ -3,12 +3,7 @@ part of 'product_bloc.dart';
 @immutable
 abstract class ProductEvent {}
 
-
-
-class ProductEventLoading extends ProductEvent {
-
-}
-
+class ProductEventLoading extends ProductEvent {}
 
 class LoadProductsEvent extends ProductEvent {
   int? branchId;
@@ -51,8 +46,13 @@ class EditProductEvent extends ProductEvent {
   final ProductDTO product;
   final int index;
   String? action;
+  bool showToast = true;
 
-  EditProductEvent({required this.product, required this.index, this.action});
+  EditProductEvent(
+      {required this.product,
+      required this.index,
+      this.action,
+      bool showToast = true});
 }
 
 class UpdateProductEvent extends ProductEvent {

@@ -5,8 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/screens/auth_screen/model/auth_response.dart';
 
 class SecureStorageFrave {
-  final secureStorage = const FlutterSecureStorage();
-
+  final secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    wOptions: WindowsOptions(),
+  );
 
   persisAuthShare(AuthResponse auth) async {
     SharedPreferences.getInstance().then((prefs) {
@@ -27,7 +31,6 @@ class SecureStorageFrave {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('auth');
   }
-
 
   Future<void> persistAuth(AuthResponse auth) async {
     await secureStorage.write(key: 'auth', value: jsonEncode(auth.toJson()));

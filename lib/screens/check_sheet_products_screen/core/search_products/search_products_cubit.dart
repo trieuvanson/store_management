@@ -19,9 +19,7 @@ class SearchProductsCubit extends Cubit<SearchProductsState> {
     try {
       if (query == null || query.isEmpty) {
         emit(ProductLoadedSearch(
-            products: [],
-            hasNext: false,
-            nextPage: pageIndex! + 1));
+            products: [], hasNext: false, nextPage: pageIndex! + 1));
         return;
       }
       var products = await productRepository.search(query,
@@ -66,9 +64,10 @@ class SearchProductsCubit extends Cubit<SearchProductsState> {
             hasNext: products.length == pageSize!,
             isLoading: products.isNotEmpty ? 'more' : null,
           ));
-          Fluttertoast.showToast(
-              msg: "Đang tải trang ${currentState.nextPage}",
-              toastLength: Toast.LENGTH_SHORT);
+          // Fluttertoast.showToast(
+          //   msg: "Đang tải trang ${currentState.nextPage}",
+          //   toastLength: Toast.LENGTH_SHORT,
+          // );
           return;
         } else {
           emit(ProductLoadedSearch(
@@ -76,9 +75,10 @@ class SearchProductsCubit extends Cubit<SearchProductsState> {
               nextPage: currentState.nextPage + 1,
               hasNext: false));
         }
-      } else {
-        Fluttertoast.showToast(msg: "Không còn dữ liệu");
       }
+      // else {
+      //   Fluttertoast.showToast(msg: "Không còn dữ liệu");
+      // }
     } catch (e) {
       emit(ProductLoadedSearch(
         products: currentState.products,

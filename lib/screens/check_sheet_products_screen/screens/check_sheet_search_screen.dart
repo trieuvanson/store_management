@@ -289,7 +289,7 @@ class CheckSheetSearchScreen extends SearchDelegate<dynamic> {
   }
 
   _loadingSection() {
-    return const Center(child: CircularProgressIndicator());
+    return  Center(child: "Đang tải...".text.make());
   }
 
   @override

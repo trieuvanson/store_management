@@ -93,7 +93,7 @@ class _StoreManagementAppState extends State<StoreManagementApp> {
       if (result == ConnectivityResult.none) {
         _showToast('Không có kết nối mạng');
         _timer = Timer.periodic(const Duration(seconds: 5),
-            (Timer t) => _showToast('Không có kết nối mạng'));
+            (t) => _showToast('Không có kết nối mạng'));
       } else {
         Fluttertoast.showToast(
             msg: 'Kết nối thành công',

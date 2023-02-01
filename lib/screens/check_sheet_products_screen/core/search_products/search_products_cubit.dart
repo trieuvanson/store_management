@@ -19,7 +19,7 @@ class SearchProductsCubit extends Cubit<SearchProductsState> {
     try {
       if (query == null || query.isEmpty) {
         emit(ProductLoadedSearch(
-            products: [], hasNext: false, nextPage: pageIndex! + 1));
+            products: const [], hasNext: false, nextPage: pageIndex! + 1));
         return;
       }
       var products = await productRepository.search(query,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 pickImage(ImageSource source) async {
   final ImagePicker _picker = ImagePicker();
@@ -13,15 +12,12 @@ pickImage(ImageSource source) async {
   return null;
 }
 
-
-
 convertToVND(number) {
   var currencyString = NumberFormat.currency(locale: 'vi', symbol: '₫').format(number);
   return currencyString;
 }
 
 //showToast
-
 showToastErr(String messenger) {
   Get.snackbar(
       "Thông báo",

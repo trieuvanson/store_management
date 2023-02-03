@@ -138,7 +138,7 @@ class _StoreManagementAppState extends State<StoreManagementApp> {
         ),
       ],
       child: GetMaterialApp(
-        title: 'Quản lý tồn kho',
+        title: 'Tồn kho KiotLix',
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.light,
         theme: ThemeData(

@@ -29,7 +29,7 @@
 	<key>CFBundlePackageType</key>
     <string>APPL</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to scan QR codes</string>
+	<string>To scan QR codes</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -50,7 +51,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
   late CheckExpiresCubit _checkExpiresCubit;
   int _pageIndex = 1;
   final int _pageSize = 50;
-  bool _isShowCam = false;
+  bool _isShowCam = true;
   int indexFocus = -1;
   late String _date;
 
@@ -75,6 +76,15 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     _scrollController = ScrollController();
     _showExpiresInit();
     super.initState();
+  }
+
+  @override
+  void reassemble() {
+    if (Platform.isIOS) {
+      _qrViewController!.resumeCamera();
+    }
+
+    super.reassemble();
   }
 
   _showExpiresInit() async {
@@ -115,6 +125,7 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     if (!cameraStatus.isGranted) {
       await Permission.camera.request();
     }
+    return cameraStatus.isGranted;
   }
 
   scannerBarcode(String barcode) {
@@ -162,18 +173,24 @@ class _CheckSheetProductsScreenState extends State<CheckSheetProductsScreen> {
     print('Sound');
   }
 
-  hideShowCamera() {
-    setState(() {
-      _isShowCam = !_isShowCam;
-    });
+  hideShowCamera() async {
+    var grand = await initPermissions();
+    if (grand) {
+      setState(() {
+        _isShowCam = !_isShowCam;
+      });
+    }
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    setState(() {
-      _qrViewController = controller;
-    });
-    if (!_isShowCam) {
-      _qrViewController?.pauseCamera();
+    _qrViewController = controller;
+
+    if (Platform.isAndroid) {
+      if (!_isShowCam) {
+        _qrViewController?.pauseCamera();
+      } else {
+        _qrViewController?.resumeCamera();
+      }
     } else {
       _qrViewController?.resumeCamera();
     }

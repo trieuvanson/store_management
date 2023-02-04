@@ -58,7 +58,6 @@ dependencies:
   image_gallery_saver: ^1.7.1
   intl: ^0.17.0
   qr_code_scanner: ^1.0.1
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -28,6 +28,7 @@ class CheckSheetSearchScreen extends SearchDelegate<dynamic> {
       searchProdCubit.searchProduct(
           query: searchQuery, branchId: branchId, pageIndex: 1, pageSize: 50);
     });
+    //Code này tự config trong thư viện
     super.showResultsNotUnFocus(context);
   }
 

@@ -36,6 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _passwordController = TextEditingController();
     _loadSharedPreferences();
     _authBloc = BlocProvider.of<AuthBloc>(context);
+    _authBloc.stream.listen(_onAuthSuccess);
   }
 
   void _loadSharedPreferences() async {
@@ -71,6 +72,15 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (e) {
       // print(e);
+    }
+  }
+
+  void _onAuthSuccess(AuthState state) {
+    if (state is CheckLoginEvent) {
+      // Ẩn snackbar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      // Chuyển sang màn hình khác
+      Navigator.pushNamed(context, '/home');
     }
   }
 

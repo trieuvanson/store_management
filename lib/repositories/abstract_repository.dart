@@ -10,8 +10,8 @@ abstract class AbstractRepository {
 
   AbstractRepository() {
     BaseOptions options = BaseOptions(
-      receiveTimeout: 15000,
-      connectTimeout: 20000,
+      receiveTimeout:  const Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 20),
     );
 
     _dio = Dio(options);

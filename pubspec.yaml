@@ -35,8 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
   flutter_dotenv: ^5.0.2
-  flutter_secure_storage: ^7.0.1
-  dio: ^4.0.6
+  flutter_secure_storage: ^9.1.1
+  dio: ^5.4.3+1
   flutter_bloc: ^8.0.1
   bloc_concurrency: ^0.2.0
   stream_transform: ^2.1.0
@@ -45,18 +45,18 @@ dependencies:
   path_provider: ^2.0.11
   device_preview: ^1.1.0
   url_strategy: ^0.2.0
-  velocity_x: ^3.2.0
+  velocity_x: ^4.1.2
   hexcolor:
   shared_preferences: ^2.0.15
-  google_fonts: ^3.0.1
-  image_picker: ^0.8.6
-  permission_handler: ^10.2.0
-  audioplayers: ^1.1.1
-  fluttertoast: 8.1.2
+  google_fonts: ^6.2.0
+  image_picker: ^1.1.1
+  permission_handler: ^11.3.1
+  audioplayers: ^6.0.0
+  fluttertoast: ^8.2.5
   connectivity: ^3.0.6
   flutter_signature_pad: ^3.0.1
-  image_gallery_saver: ^1.7.1
-  intl: ^0.17.0
+  image_gallery_saver: ^2.0.3
+  intl: ^0.18.1
   qr_code_scanner: ^1.0.1
 dev_dependencies:
   flutter_test:
@@ -67,7 +67,7 @@ dev_dependencies:
     # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.1
+  flutter_lints: ^4.0.0
   flutter_app_name: ^0.1.1
   rename: any
 

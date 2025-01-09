@@ -313,3 +313,85 @@ class Debounce {
     _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
 }
+
+
+
+//  @override
+//   Widget build(BuildContext context) {
+//     assert(debugCheckHasMaterialLocalizations(context));
+//     final ThemeData theme = widget.delegate.appBarTheme(context);
+//     final String searchFieldLabel = widget.delegate.searchFieldLabel
+//       ?? MaterialLocalizations.of(context).searchFieldLabel;
+//     Widget? body;
+//     switch (widget.delegate._currentBody) {
+//       case _SearchBody.suggestions:
+//         body = KeyedSubtree(
+//           key: const ValueKey<_SearchBody>(_SearchBody.suggestions),
+//           child: widget.delegate.buildSuggestions(context),
+//         );
+//       case _SearchBody.results:
+//         body = KeyedSubtree(
+//           key: const ValueKey<_SearchBody>(_SearchBody.results),
+//           child: widget.delegate.buildResults(context),
+//         );
+//       case null:
+//         break;
+//     }
+//
+//     late final String routeName;
+//     switch (theme.platform) {
+//       case TargetPlatform.iOS:
+//       case TargetPlatform.macOS:
+//         routeName = '';
+//       case TargetPlatform.android:
+//       case TargetPlatform.fuchsia:
+//       case TargetPlatform.linux:
+//       case TargetPlatform.windows:
+//         routeName = searchFieldLabel;
+//     }
+//
+//     return Semantics(
+//       explicitChildNodes: true,
+//       scopesRoute: true,
+//       namesRoute: true,
+//       label: routeName,
+//       child: Theme(
+//         data: theme,
+//         child: Scaffold(
+//           appBar: AppBar(
+//             leadingWidth: widget.delegate.leadingWidth,
+//             automaticallyImplyLeading: widget.delegate.automaticallyImplyLeading ?? true,
+//             leading: widget.delegate.buildLeading(context),
+//             title: TextField(
+//               controller: widget.delegate._queryTextController,
+//               focusNode: focusNode,
+//               onChanged: (String query) {
+//                 widget.delegate.showResultsNotUnFocus(context);
+//               },
+//               style: widget.delegate.searchFieldStyle ?? theme.textTheme.titleLarge,
+//               textInputAction: widget.delegate.textInputAction,
+//               keyboardType: widget.delegate.keyboardType,
+//               onSubmitted: (String _) => widget.delegate.showResults(context),
+//               decoration: InputDecoration(hintText: searchFieldLabel),
+//             ),
+//             flexibleSpace: widget.delegate.buildFlexibleSpace(context),
+//             actions: widget.delegate.buildActions(context),
+//             bottom: widget.delegate.buildBottom(context),
+//           ),
+//           body: AnimatedSwitcher(
+//             duration: const Duration(milliseconds: 300),
+//             child: body,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+// void showResultsNotUnFocus(BuildContext context) {
+//   _currentBody = _SearchBody.results;
+//   _focusNode?.requestFocus();
+// }
+
+
+
+

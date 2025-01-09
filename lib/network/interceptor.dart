@@ -37,7 +37,7 @@ class LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioError err,ErrorInterceptorHandler errorInterceptorHandler) {
+  void onError(DioException err,ErrorInterceptorHandler errorInterceptorHandler) {
     var message = {
       "TYPE": "ERROR",
       'ERROR RESPONSE BASE_URL':err.response?.requestOptions.baseUrl ?? "",

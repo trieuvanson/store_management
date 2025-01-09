@@ -24,7 +24,7 @@ class _CheckingLoginPageState extends State<CheckingLoginPage> with TickerProvid
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.8).animate(_animationController)..addStatusListener((status) {
       if( status == AnimationStatus.completed ){
